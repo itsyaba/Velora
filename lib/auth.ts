@@ -1,7 +1,7 @@
 import { APIError, betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { admin, createAuthMiddleware } from "better-auth/plugins";
+import { admin } from "better-auth/plugins";
 import { db } from "./db";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { Db } from "mongodb";
@@ -13,9 +13,6 @@ export const auth = betterAuth({
   database: mongodbAdapter(db as unknown as Db),
   emailAndPassword: {
     enabled: true,
-  },
-  hooks: {
-    before: createAuthMiddleware(async (ctx) => {}),
   },
   account: {},
   plugins: [admin(), nextCookies()],

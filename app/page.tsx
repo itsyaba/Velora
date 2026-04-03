@@ -1,90 +1,128 @@
-import { auth } from "@/lib/auth"; // path to your Better Auth server instance
-import { headers } from "next/headers";
+'use client';
 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Shield, ArrowRight, Layout, ArrowUpRight, LogOut } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
-import LogoutButton from "@/components/auth/logout-button-icon";
-import HeroSection from "./_components/hero";
-export default async function page() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+import { useState } from 'react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ModeToggle } from '@/components/mode-toggle';
+import ChatInput from '@/components/chat/ChatInput';
+import PromptChip from '@/components/chat/PromptChip';
+import AuthModal from '@/components/auth/AuthModal';
+import { useApp } from '@/context/AppContext';
+import { suggestedPrompts } from '@/data/mockData';
+import { useRouter } from 'next/navigation';
+
+export default function LandingPage() {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isLoggedIn, setIsLoggedIn, pendingMessage, setPendingMessage, createNewChat } = useApp();
+  const router = useRouter();
+
+  const handleSendMessage = (message: string) => {
+    if (!isLoggedIn) {
+      setPendingMessage(message);
+      setShowAuthModal(true);
+    } else {
+      createNewChat(message);
+      router.push('/chat');
+    }
+  };
+
+  const handlePromptClick = (prompt: string) => {
+    handleSendMessage(prompt);
+  };
+
   return (
     <div className="flex relative min-h-screen flex-col">
+      {/* Navbar */}
       <header className="relative z-20 border-b">
-        <div className="container  flex h-16 items-center justify-between">
-          <div className="flex items-center ">
-            <span className="font-bold text-xl">Better Auth Starter</span>
+        <div className="container flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <span className="font-bold text-xl">AI Concierge</span>
           </div>
           <nav className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <ModeToggle />
-              {session?.user ? (
-                <div className="flex gap-2 items-center">
-                  <a href="/dashboard">
-                    <Button
-                      className="rounded-sm flex items-center gap-2"
-                      variant="outline"
-                      size="default"
-                    >
-                      <Layout className="w-4 h-4" />
-                      Dashboard
-                    </Button>
-                  </a>
-                  <LogoutButton />
-                </div>
+              {isLoggedIn ? (
+                <Link href="/chat">
+                  <Button className="rounded-sm">
+                    Go to Chat
+                  </Button>
+                </Link>
               ) : (
-                <>
-                  <Link href="/login">
-                    <Button className="rounded-sm" variant="outline">
-                      Log in
-                    </Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button className="rounded-sm">Sign up</Button>
-                  </Link>
-                </>
+                <Button 
+                  className="rounded-sm" 
+                  onClick={() => setShowAuthModal(true)}
+                >
+                  Sign in
+                </Button>
               )}
             </div>
           </nav>
         </div>
       </header>
-      <HeroSection />
-      <footer className="fixed border bottom-0 w-full z-10 border-t flex border-zinc-200 dark:border-zinc-800 py-6 md:bg-black/5 md:dark:bg-black/80 backdrop-blur-sm">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center mb-4 md:mb-0">
-            <Shield className="h-5 w-5 mr-2" />
-            <span className="text-sm font-medium">Auth Starter</span>
+
+      {/* Hero Section */}
+      <main className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 py-16">
+        <div className="w-full max-w-4xl mx-auto flex flex-col items-center">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-b from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Your AI Travel Assistant
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Discover Ethiopia with personalized recommendations for tours, guides, translators, and more.
+            </p>
           </div>
-          <div className="flex items-center space-x-6">
-            <Link
-              href="https://github.com/better-auth/better-auth"
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-            >
-              Github <ArrowUpRight className="w-3 h-3" />
-            </Link>
-            <Link
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-              href="https://better-auth.com/docs"
-            >
-              Docs <ArrowUpRight className="w-3 h-3" />
-            </Link>
-            <Link
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-              href="https://www.better-auth.com/docs/examples"
-            >
-              Examples
-              <ArrowUpRight className="w-3 h-3" />
-            </Link>
+
+          {/* Chat Input */}
+          <div className="w-full max-w-2xl mb-8">
+            <ChatInput
+              onSend={handleSendMessage}
+              placeholder="ምን እርዳታ ይፈልጋሉ? / How can I help you today?"
+            />
           </div>
-          <div className="text-sm text-zinc-500 mt-4 md:mt-0">
-            Better Auth Starter
+
+          {/* Suggested Prompts */}
+          <div className="flex flex-wrap gap-2 justify-center">
+            {suggestedPrompts.map((prompt, index) => (
+              <PromptChip
+                key={index}
+                prompt={prompt}
+                onClick={handlePromptClick}
+              />
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t py-6">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="text-sm text-muted-foreground mb-4 md:mb-0">
+              © 2024 AI Concierge. Your personal travel assistant.
+            </div>
+            <div className="flex items-center space-x-6">
+              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+                About
+              </Link>
+              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+                Privacy
+              </Link>
+              <Link href="#" className="text-sm text-muted-foreground hover:text-foreground">
+                Terms
+              </Link>
+              <Link href="/admin" className="text-sm text-muted-foreground hover:text-foreground">
+                Admin
+              </Link>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }

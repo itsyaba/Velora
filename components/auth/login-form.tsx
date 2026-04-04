@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -27,6 +27,11 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectAfterLogin =
+    searchParams.get("callbackUrl") ??
+    searchParams.get("callbackURL") ??
+    "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,7 +55,7 @@ export function LoginForm({
         /**
          * a url to redirect to after the user verifies their email (optional)
          */
-        callbackURL: "/dashboard",
+        callbackURL: redirectAfterLogin,
         /**
          * remember the user session after the browser is closed.
          * @default true

@@ -1,4 +1,3 @@
-import { auth } from "./auth";
 import { authClient } from "./auth-client";
 
 export const githubSignin = async () => {

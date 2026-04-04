@@ -1,29 +1,34 @@
-import { auth } from "@/lib/auth"; // path to your Better Auth server instance
+import { getAuth } from "@/lib/auth";
 import { headers } from "next/headers";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Shield, ArrowRight, Layout, ArrowUpRight, LogOut } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
+import { Layout } from "lucide-react";
 import LogoutButton from "@/components/auth/logout-button-icon";
 import HeroSection from "./_components/hero";
 export default async function page() {
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   return (
     <div className="flex relative min-h-screen flex-col">
-      <header className="relative z-20 border-b">
-        <div className="container  flex h-16 items-center justify-between">
+      <header className="relative z-20 border-b border-stone-200/80 bg-[#faf8f5] dark:border-zinc-800 dark:bg-zinc-950">
+        <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center ">
-            <span className="font-bold text-xl">Better Auth Starter</span>
+            <span className="font-bold text-xl">Velora</span>
           </div>
           <nav className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <ModeToggle />
               {session?.user ? (
                 <div className="flex gap-2 items-center">
+                  <Link href="/concierge">
+                    <Button className="rounded-sm" variant="default" size="default">
+                      Concierge
+                    </Button>
+                  </Link>
                   <a href="/dashboard">
                     <Button
                       className="rounded-sm flex items-center gap-2"
@@ -52,8 +57,10 @@ export default async function page() {
           </nav>
         </div>
       </header>
-      <HeroSection />
-      <footer className="fixed border bottom-0 w-full z-10 border-t flex border-zinc-200 dark:border-zinc-800 py-6 md:bg-black/5 md:dark:bg-black/80 backdrop-blur-sm">
+      <main className="flex flex-1 flex-col">
+        <HeroSection isLoggedIn={!!session?.user} />
+      </main>
+      {/* <footer className="fixed border bottom-0 w-full z-10 border-t flex border-zinc-200 dark:border-zinc-800 py-6 md:bg-black/5 md:dark:bg-black/80 backdrop-blur-sm">
         <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
           <div className="flex items-center mb-4 md:mb-0">
             <Shield className="h-5 w-5 mr-2" />
@@ -84,7 +91,7 @@ export default async function page() {
             Better Auth Starter
           </div>
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }

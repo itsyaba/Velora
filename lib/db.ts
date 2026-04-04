@@ -17,6 +17,7 @@ if (!MONGODB_URI) {
 
 const cached = mongoGlobal.mongoose ?? { conn: null, promise: null };
 mongoGlobal.mongoose = cached;
+
 async function dbConnect(): Promise<typeof mongoose> {
   if (cached.conn) {
     return cached.conn;
@@ -40,6 +41,11 @@ async function dbConnect(): Promise<typeof mongoose> {
 
   return cached.conn;
 }
-const conn = await dbConnect();
-const db = conn.connection.db;
-export { db };
+
+/** Connect to MongoDB and return the native Db (used by Better Auth). */
+export async function connectDb() {
+  const conn = await dbConnect();
+  return conn.connection.db;
+}
+
+export { mongoose };

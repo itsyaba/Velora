@@ -4,7 +4,7 @@ import { SiteHeader } from "@/components/site-header";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import { auth } from "@/lib/auth"; // path to your Better Auth server instance
+import { getAuth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -13,6 +13,7 @@ export default async function layout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(), // you need to pass the headers object.
   });

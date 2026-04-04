@@ -14,6 +14,7 @@ import {
   IconHome,
   IconInnerShadowTop,
   IconListDetails,
+  IconMessageChatbot,
   IconMoneybag,
   IconMoneybagPlus,
   IconReport,
@@ -48,6 +49,11 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: IconDashboard,
+    },
+    {
+      title: "Concierge",
+      url: "/concierge",
+      icon: IconMessageChatbot,
     },
     {
       title: "Account",

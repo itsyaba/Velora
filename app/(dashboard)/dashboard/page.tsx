@@ -3,9 +3,10 @@ import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 import { headers } from "next/headers";
 import data from "../data.json";
-import { auth } from "@/lib/auth";
+import { getAuth } from "@/lib/auth";
 
 export default async function Page() {
+  const auth = await getAuth();
   const res = await auth.api.getSession({
     headers: await headers(),
   });

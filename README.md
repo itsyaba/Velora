@@ -1,189 +1,97 @@
-# 🧭 AI Concierge — Intelligent Travel Assistant for Ethiopia
+# Velora — AI Concierge for Ethiopia
 
-> Book local guides, drivers, and translators instantly with AI. Available in Amharic and English.
-
----
-
-## 📖 Overview
-
-AI Concierge is a bilingual AI-powered travel assistant built for tourists and travelers in Ethiopia. Users interact with a natural language chat interface to discover experiences, request services, and book local providers — all in seconds. Admins manage the provider marketplace through a dedicated dashboard.
-
-Built at a hackathon in 100 hours.
+Book local guides, drivers, and translators with a bilingual (Amharic + English) AI concierge. This repo implements the **Traveler MVP**: text chat, intent classification, top provider suggestions from MongoDB, and one-click **Book / Request** with pending bookings.
 
 ---
 
-## ✨ Features
+## Features (implemented)
 
-### For Travelers
-- 💬 **AI Chat** — Type or speak in Amharic or English
-- 🎯 **Smart Intent Detection** — AI understands complaints, requests, and exploration queries
-- 🗺️ **Personalized Suggestions** — Get matched with guides, drivers, and translators based on your needs
-- ⚡ **Instant Booking** — One-click Book / Request with instant confirmation
-- 🌍 **Real-time Translation** — Communicate across language barriers seamlessly
+- **AI Concierge** at `/concierge` (signed-in users) — streaming replies via **Gemini** (Vercel AI SDK + `@ai-sdk/google`)
+- **Intent detection** — service requests, complaints, exploration, on-demand; optional clarifying questions
+- **Provider cards** — top 1–3 matches with price, languages, description
+- **Bookings** — `POST /api/bookings` creates a `pending` record (manual confirmation is fine for early stage)
 
-### For Admins
-- 🛠️ **Provider Dashboard** — Add and manage local guides, resorts, drivers, and translators
-- 📊 **Analytics** — Track top requests, bookings, and sentiment
-- 🔒 **Role-based Access** — Secure admin-only routes
+Voice, real-time translation relay, payments, and analytics dashboards are not in this MVP.
 
 ---
 
-## 🏗️ Tech Stack
+## Tech stack
 
 | Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 14 (App Router) |
-| Styling | Tailwind CSS + shadcn/ui |
-| Animation | Framer Motion |
+|-------|------------|
+| Framework | Next.js 15 (App Router) |
+| UI | Tailwind CSS + shadcn/ui |
 | Auth | Better Auth |
 | Database | MongoDB + Mongoose |
-| File Uploads | UploadThing |
-| AI | Claude API (Anthropic) |
-| Deployment | Vercel |
+| AI | Gemini API via `ai` + `@ai-sdk/google` |
 
 ---
 
-## 🚀 Getting Started
+## Getting started
 
 ### Prerequisites
 
 - Node.js 18+
-- MongoDB database (local or Atlas)
-- Anthropic API key
-- UploadThing account
+- MongoDB (local or Atlas)
+- [Google AI Studio](https://aistudio.google.com/) API key (`GOOGLE_GENERATIVE_AI_API_KEY`)
 
-### Installation
+### Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/ai-concierge.git
-cd ai-concierge
-
-# Install dependencies
 npm install
-
-# Set up environment variables
 cp .env.example .env.local
-```
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-```env
-# MongoDB
-MONGODB_URI=your_mongodb_connection_string
-
-# Better Auth
-BETTER_AUTH_SECRET=your_auth_secret
-BETTER_AUTH_URL=http://localhost:3000
-
-# Anthropic
-ANTHROPIC_API_KEY=your_anthropic_api_key
-
-# UploadThing
-UPLOADTHING_SECRET=your_uploadthing_secret
-UPLOADTHING_APP_ID=your_uploadthing_app_id
-```
-
-### Run the Development Server
-
-```bash
+# Edit .env.local: DATABASE_URL, BETTER_AUTH_SECRET, GOOGLE_GENERATIVE_AI_API_KEY
+npm run seed   # optional: seed mock providers
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000). Sign in, then open **Concierge** from the header or go to `/concierge`.
 
 ---
 
-## 📁 Project Structure
+## Environment variables
 
-```
-/app
-  /page.tsx                  → Landing page
-  /chat/page.tsx             → AI Concierge chat interface
-  /admin/page.tsx            → Admin dashboard
-  /admin/providers/page.tsx  → Manage provider listings
+| Variable | Required | Purpose |
+|----------|----------|---------|
+| `DATABASE_URL` | Yes | MongoDB connection string |
+| `BETTER_AUTH_SECRET` | Yes | Session encryption |
+| `BETTER_AUTH_URL` | Yes | App URL (e.g. `http://localhost:3000`) |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Yes for chat | Gemini API key |
+| `GEMINI_MODEL` | No | Model id (default `gemini-2.0-flash`) |
 
-/api
-  /chat/route.ts             → Claude API + intent detection
-  /providers/route.ts        → Provider CRUD
-  /bookings/route.ts         → Booking management
-
-/models
-  /Provider.ts               → Provider schema
-  /Booking.ts                → Booking schema
-  /ChatLog.ts                → Chat history schema
-
-/components
-  /chat/                     → Chat UI components
-  /admin/                    → Admin panel components
-  /providers/                → Provider card components
-```
+OAuth env vars are optional; configure in Better Auth if you use GitHub/Google/Twitter sign-in.
 
 ---
 
-## 🗂️ Database Schema
+## Project structure (relevant paths)
 
-### Provider
-```ts
-{
-  name: string
-  photo: string         // UploadThing URL
-  category: string      // "guide" | "driver" | "translator" | "resort"
-  languages: string[]
-  price: number
-  availability: boolean
-  description: string
-}
 ```
-
-### Booking
-```ts
-{
-  userId: string
-  providerId: ObjectId
-  status: string        // "pending" | "confirmed" | "cancelled"
-  timestamp: Date
-}
-```
-
-### ChatLog
-```ts
-{
-  sessionId: string
-  messages: Message[]
-  intent: string
-  timestamp: Date
-}
+app/
+  concierge/page.tsx       → Concierge UI
+  api/chat/route.ts        → Gemini streaming + intent + suggestions
+  api/bookings/route.ts    → Create pending booking
+lib/
+  models/                  → Provider, Booking, ChatSession (Mongoose)
+  provider-query.ts        → Top providers by category
+  concierge-classifier.ts  → Zod schema + system prompt helpers
+components/
+  concierge-chat.tsx       → Chat + suggestion cards + Book/Request
+scripts/
+  seed-providers.ts        → Seed mock providers (`npm run seed`)
 ```
 
 ---
 
-## 🤖 How the AI Works
+## How the AI flow works
 
-1. User sends a message in Amharic or English
-2. Claude API classifies the intent (service request / complaint / exploration)
-3. Intent is matched against provider categories in MongoDB
-4. Top 1–3 providers are returned with price, availability, and description
-5. User clicks **Book** → booking is created and confirmation is shown
-
----
-
-## 💰 Business Model
-
-- **10% commission** on every booking made through the platform
-- **Featured listings** — providers pay for priority placement
-- **Premium subscription** — priority AI responses and VIP guide access
+1. Client sends messages to `POST /api/chat` with `sessionId` (chat id).
+2. Server runs **structured classification** (`generateObject`) for intent and category.
+3. Server loads up to **3 providers** from MongoDB when appropriate (not for pure complaints or when clarification is needed).
+4. Server streams the assistant reply and sends a **`data-suggestions`** chunk for the UI cards.
+5. **Book** / **Request** calls `POST /api/bookings` with `providerId`.
 
 ---
 
-## 👥 Team
-
-Built with ❤️ at [Hackathon Name] — [Your Team Name]
-
----
-
-## 📄 License
+## License
 
 MIT

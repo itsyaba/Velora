@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconSearch,
   IconPlus,
@@ -11,6 +11,7 @@ import {
   IconMapPinFilled,
   IconPhoneCall,
   IconCircleFilled,
+  IconLoader2,
 } from "@tabler/icons-react";
 import {
   Card,
@@ -45,57 +46,104 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { UploadDropzone } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
-/*  Mock Data                                                          */
+/*  Helper Functions                                                  */
 /* ------------------------------------------------------------------ */
-const initialDrivers = [
-  {
-    id: 1,
-    name: "Tariku Lema",
-    vehicle: "Toyota Corolla 2023",
-    license: "B-Class",
-    status: "on-duty",
-    email: "tariku.l@example.com",
-    rating: 4.9,
-    trips: 342,
-  },
-  {
-    id: 2,
-    name: "Elias Worku",
-    vehicle: "Hyundai Elantra 2022",
-    license: "B-Class",
-    status: "off-duty",
-    email: "elias.w@example.com",
-    rating: 4.7,
-    trips: 215,
-  },
-  {
-    id: 3,
-    name: "Mulugeta Belay",
-    vehicle: "Suzuki Dzire 2023",
-    license: "A-Class",
-    status: "on-duty",
-    email: "mulu.b@example.com",
-    rating: 4.8,
-    trips: 128,
-  },
-];
 
-/* ------------------------------------------------------------------ */
-/*  Page Component                                                    */
-/* ------------------------------------------------------------------ */
 
 export default function DriversPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredDrivers = initialDrivers.filter((d) => {
+  // Form State
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    category: "driver",
+    vehicle: "",
+    licenseType: "",
+    price: "",
+    bio: "",
+    photo: "",
+  });
+
+  const fetchDrivers = async () => {
+    try {
+      const res = await fetch("/api/providers?category=driver");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setDrivers(data.providers || []);
+    } catch (error) {
+      console.error("Error fetching drivers:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDrivers();
+  }, []);
+
+  const handleCreateDriver = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          price: Number(formData.price) || 0,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create driver");
+      }
+
+      toast.success("Driver created successfully!");
+      setIsDialogOpen(false);
+      setFormData({ name: "", email: "", category: "driver", vehicle: "", licenseType: "", price: "", bio: "", photo: "" });
+      fetchDrivers(); // Refresh list
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredDrivers = drivers.filter((d) => {
     const matchesSearch =
-      d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      d.vehicle.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || d.status === statusFilter;
+      d.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (d.vehicle || "").toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Map statusFilter back to available boolean
+    let matchesStatus = true;
+    if (statusFilter === "on-duty") matchesStatus = d.available === true;
+    if (statusFilter === "off-duty") matchesStatus = d.available === false;
+
     return matchesSearch && matchesStatus;
   });
 
@@ -109,10 +157,147 @@ export default function DriversPage() {
             Monitor and manage your fleet and driver availability.
           </p>
         </div>
-        <Button className="gap-2 shadow-sm font-semibold">
-          <IconPlus className="size-4" />
-          Add Driver
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 shadow-sm font-semibold">
+              <IconPlus className="size-4" />
+              Add Driver
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px] h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Driver</DialogTitle>
+              <DialogDescription>
+                Register a new driver to your fleet.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateDriver} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="photo">Driver Photo</Label>
+                {formData.photo ? (
+                  <div className="relative w-full h-32 bg-muted rounded-xl border border-border flex items-center justify-center overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={formData.photo} alt="Uploaded driver profile" className="h-full object-cover" />
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => setFormData(p => ({ ...p, photo: "" }))}
+                      className="absolute top-2 right-2 h-7 rounded-full text-xs"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border border-border/50 border-dashed rounded-xl bg-muted/20 p-6 flex flex-col items-center justify-center">
+                    <UploadDropzone
+                      endpoint="providerPhoto"
+                      onUploadBegin={() => {
+                        setIsUploading(true);
+                        console.log("📁 Driver photo upload started...");
+                      }}
+                      onClientUploadComplete={(res) => {
+                        setIsUploading(false);
+                        if (res && res[0]) {
+                          console.log("✅ Driver photo uploaded:", res[0].url);
+                          setFormData(p => ({ ...p, photo: res[0].url }));
+                          toast.success("Photo uploaded!");
+                        }
+                      }}
+                      onUploadError={(error) => {
+                        setIsUploading(false);
+                        console.error("❌ Driver photo upload error:", error);
+                        toast.error(`Upload failed: ${error.message}`);
+                      }}
+                      config={{ mode: "auto" }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input 
+                    id="name" 
+                    required 
+                    value={formData.name}
+                    onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                    placeholder="E.g. Haile Gebreselassie" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={formData.email}
+                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                    placeholder="haile@example.com" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="vehicle">Vehicle Details</Label>
+                  <Input 
+                    id="vehicle" 
+                    value={formData.vehicle}
+                    onChange={(e) => setFormData(p => ({ ...p, vehicle: e.target.value }))}
+                    placeholder="Toyota Land Cruiser" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="licenseType">License Type</Label>
+                  <Input 
+                    id="licenseType" 
+                    value={formData.licenseType}
+                    onChange={(e) => setFormData(p => ({ ...p, licenseType: e.target.value }))}
+                    placeholder="Public transport / Class 5" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="price">Base Rate (ETB/hr)</Label>
+                <Input 
+                  id="price" 
+                  type="number" 
+                  required 
+                  min="0"
+                  value={formData.price}
+                  onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))}
+                  placeholder="300" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Driver Bio</Label>
+                <Textarea 
+                  id="bio" 
+                  rows={3} 
+                  value={formData.bio}
+                  onChange={(e) => setFormData(p => ({ ...p, bio: e.target.value }))}
+                  placeholder="Experience or quick description..." 
+                />
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting || isUploading}>
+                  {isSubmitting ? (
+                    <><IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                  ) : isUploading ? (
+                    <><IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                  ) : "Create Driver"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Main Content Card */}
@@ -163,47 +348,53 @@ export default function DriversPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDrivers.length > 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                    Loading drivers...
+                  </TableCell>
+                </TableRow>
+              ) : filteredDrivers.length > 0 ? (
                 filteredDrivers.map((d) => (
                   <TableRow
-                    key={d.id}
+                    key={d._id}
                     className="group transition-colors hover:bg-muted/10 border-border/50 whitespace-nowrap"
                   >
                     <TableCell className="pl-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{d.name}</span>
                         <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                          Rating: {d.rating} ★
+                          Rating: {d.rating || 0} ★
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-sm">
                          <IconCar className="size-3.5 text-primary/60" />
-                         <span className="font-medium">{d.vehicle}</span>
+                         <span className="font-medium">{d.vehicle || "No vehicle data"}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="font-semibold text-[10px] uppercase border-border/50">
-                        {d.license}
+                        {d.licenseType || "Unknown"}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                          <IconCircleFilled className={cn(
                            "size-2 animate-pulse transition-all",
-                           d.status === "on-duty" ? "text-emerald-500" : "text-slate-300"
+                           d.available ? "text-emerald-500" : "text-slate-300"
                          )} />
                          <span className={cn(
                            "text-xs font-bold uppercase tracking-tight",
-                           d.status === "on-duty" ? "text-emerald-600" : "text-slate-500"
+                           d.available ? "text-emerald-600" : "text-slate-500"
                          )}>
-                            {d.status === "on-duty" ? "On Duty" : "Off Duty"}
+                            {d.available ? "On Duty" : "Off Duty"}
                          </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-black tracking-tight tabular-nums">
-                      {d.trips}
+                      {d.totalBookings}
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
@@ -249,7 +440,7 @@ export default function DriversPage() {
                 <CardDescription className="text-xs uppercase font-bold tracking-widest text-primary/70">Operating</CardDescription>
              </CardHeader>
              <CardContent className="px-4 pb-4">
-                <span className="text-lg font-black">{initialDrivers.filter(d => d.status === 'on-duty').length} Active</span>
+                <span className="text-lg font-black">{drivers.filter(d => d.available).length} Active</span>
              </CardContent>
           </Card>
       </div>

@@ -1,15 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconSearch,
   IconPlus,
-  IconLanguages,
+  IconLanguage,
   IconCircleCheckFilled,
   IconDotsVertical,
   IconCertificate,
   IconCertificateOff,
   IconMail,
+  IconLoader2,
 } from "@tabler/icons-react";
 import {
   Card,
@@ -44,55 +45,106 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { UploadDropzone } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
-/*  Mock Data                                                          */
+/*  Helper Functions                                                  */
 /* ------------------------------------------------------------------ */
-const initialTranslators = [
-  {
-    id: 1,
-    name: "Selamawit Tadesse",
-    languages: ["Amharic", "English", "French"],
-    experience: "5 Years",
-    status: "verified",
-    email: "selam.t@example.com",
-    bookings: 124,
-  },
-  {
-    id: 2,
-    name: "Daniel Ghebre",
-    languages: ["Amharic", "German", "Arabic"],
-    experience: "3 Years",
-    status: "verified",
-    email: "daniel.g@example.com",
-    bookings: 89,
-  },
-  {
-    id: 3,
-    name: "Helen Yosef",
-    languages: ["Amharic", "Italian"],
-    experience: "2 Years",
-    status: "in-review",
-    email: "helen.y@example.com",
-    bookings: 42,
-  },
-];
 
-/* ------------------------------------------------------------------ */
-/*  Page Component                                                    */
-/* ------------------------------------------------------------------ */
 
 export default function TranslatorsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [languageFilter, setLanguageFilter] = useState("all");
+  const [translators, setTranslators] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredTranslators = initialTranslators.filter((t) => {
+  // Form State
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    category: "translator",
+    languagesStr: "",
+    experience: "",
+    price: "",
+    bio: "",
+    photo: "",
+  });
+
+  const fetchTranslators = async () => {
+    try {
+      const res = await fetch("/api/providers?category=translator");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const data = await res.json();
+      setTranslators(data.providers || []);
+    } catch (error) {
+      console.error("Error fetching translators:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTranslators();
+  }, []);
+
+  const handleCreateTranslator = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    const languagesArray = formData.languagesStr
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    try {
+      const res = await fetch("/api/providers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          languages: languagesArray,
+          price: Number(formData.price) || 0,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Failed to create translator");
+      }
+
+      toast.success("Translator created successfully!");
+      setIsDialogOpen(false);
+      setFormData({ name: "", email: "", category: "translator", languagesStr: "", experience: "", price: "", bio: "", photo: "" });
+      fetchTranslators(); // Refresh list
+    } catch (error: any) {
+      toast.error(error.message || "An error occurred.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const filteredTranslators = translators.filter((t) => {
     const matchesSearch =
       t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (t.email || "").toLowerCase().includes(searchTerm.toLowerCase());
     const matchesLanguage =
-      languageFilter === "all" || t.languages.includes(languageFilter);
+      languageFilter === "all" || (t.languages && t.languages.includes(languageFilter));
     return matchesSearch && matchesLanguage;
   });
 
@@ -106,10 +158,148 @@ export default function TranslatorsPage() {
             Manage certified language specialists and their verification status.
           </p>
         </div>
-        <Button className="gap-2 shadow-sm font-semibold">
-          <IconPlus className="size-4" />
-          Add Translator
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 shadow-sm font-semibold">
+              <IconPlus className="size-4" />
+              Add Translator
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[500px] h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Add New Translator</DialogTitle>
+              <DialogDescription>
+                Register a new language specialist into the Velora system.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleCreateTranslator} className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="photo">Profile Photo</Label>
+                {formData.photo ? (
+                  <div className="relative w-full h-32 bg-muted rounded-xl border border-border flex items-center justify-center overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={formData.photo} alt="Uploaded profile" className="h-full object-cover" />
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => setFormData(p => ({ ...p, photo: "" }))}
+                      className="absolute top-2 right-2 h-7 rounded-full text-xs"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="border border-border/50 border-dashed rounded-xl bg-muted/20 p-6 flex flex-col items-center justify-center">
+                    <UploadDropzone
+                      endpoint="providerPhoto"
+                      onUploadBegin={() => {
+                        setIsUploading(true);
+                        console.log("📁 Translator photo upload started...");
+                      }}
+                      onClientUploadComplete={(res) => {
+                        setIsUploading(false);
+                        if (res && res[0]) {
+                          console.log("✅ Translator photo uploaded:", res[0].url);
+                          setFormData(p => ({ ...p, photo: res[0].url }));
+                          toast.success("Photo uploaded!");
+                        }
+                      }}
+                      onUploadError={(error) => {
+                        setIsUploading(false);
+                        console.error("❌ Translator photo upload error:", error);
+                        toast.error(`Upload failed: ${error.message}`);
+                      }}
+                      config={{ mode: "auto" }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input 
+                    id="name" 
+                    required 
+                    value={formData.name}
+                    onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+                    placeholder="E.g. Selamawit Tadesse" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={formData.email}
+                    onChange={(e) => setFormData(p => ({ ...p, email: e.target.value }))}
+                    placeholder="selam@example.com" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="langs">Languages (Comma separated)</Label>
+                <Input 
+                  id="langs" 
+                  required 
+                  value={formData.languagesStr}
+                  onChange={(e) => setFormData(p => ({ ...p, languagesStr: e.target.value }))}
+                  placeholder="Amharic, English, French" 
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="exp">Experience</Label>
+                  <Input 
+                    id="exp" 
+                    value={formData.experience}
+                    onChange={(e) => setFormData(p => ({ ...p, experience: e.target.value }))}
+                    placeholder="E.g. 5 Years" 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="price">Base Rate (ETB/hr)</Label>
+                  <Input 
+                    id="price" 
+                    type="number" 
+                    required 
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) => setFormData(p => ({ ...p, price: e.target.value }))}
+                    placeholder="500" 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea 
+                  id="bio" 
+                  rows={3} 
+                  value={formData.bio}
+                  onChange={(e) => setFormData(p => ({ ...p, bio: e.target.value }))}
+                  placeholder="Summary of expertise..." 
+                />
+              </div>
+
+              <DialogFooter className="pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting || isUploading}>
+                  {isSubmitting ? (
+                    <><IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                  ) : isUploading ? (
+                    <><IconLoader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                  ) : "Create Translator"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Main Content Card */}
@@ -163,23 +353,29 @@ export default function TranslatorsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTranslators.length > 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-48 text-center text-muted-foreground">
+                    Loading language specialists...
+                  </TableCell>
+                </TableRow>
+              ) : filteredTranslators.length > 0 ? (
                 filteredTranslators.map((t) => (
                   <TableRow
-                    key={t.id}
+                    key={t._id}
                     className="group transition-colors hover:bg-muted/10 border-border/50 whitespace-nowrap"
                   >
                     <TableCell className="pl-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-semibold text-sm">{t.name}</span>
                         <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                          <IconMail className="size-2.5" /> {t.email}
+                          <IconMail className="size-2.5" /> {t.email || "No email"}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1.5 min-w-[140px]">
-                        {t.languages.map((lang) => (
+                        {(t.languages || []).map((lang: string) => (
                           <Badge 
                             key={lang} 
                             variant="secondary" 
@@ -191,30 +387,30 @@ export default function TranslatorsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium text-xs text-muted-foreground">
-                      {t.experience}
+                      {t.experience || "Not listed"}
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant="outline"
                         className={cn(
                           "border-transparent px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider",
-                          t.status === "verified"
+                          t.isVerified
                             ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                             : "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
                         )}
                       >
                         <div className="flex items-center gap-1.5">
-                           {t.status === "verified" ? (
+                           {t.isVerified ? (
                              <IconCircleCheckFilled className="size-3" />
                            ) : (
                              <IconCertificate className="size-3" />
                            )}
-                           {t.status === "verified" ? "Verified" : "In Review"}
+                           {t.isVerified ? "Verified" : "In Review"}
                         </div>
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-bold tabular-nums">
-                      {t.bookings}
+                      {t.totalBookings}
                     </TableCell>
                     <TableCell className="pr-6 text-right">
                       <DropdownMenu>
@@ -227,7 +423,7 @@ export default function TranslatorsPage() {
                           <DropdownMenuLabel>Translator Menu</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="gap-2">
-                             <IconLanguages className="size-4" /> View proficiencies
+                             <IconLanguage className="size-4" /> View proficiencies
                           </DropdownMenuItem>
                           <DropdownMenuItem className="gap-2">
                              <IconCertificate className="size-4" /> Update certification

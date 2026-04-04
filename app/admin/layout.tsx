@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Toaster } from "@/components/ui/sonner";
 import {
   LayoutDashboard,
   Users,
@@ -350,6 +351,7 @@ export default function AdminLayout({
   const pageTitle = getPageTitle(pathname);
 
   return (
+    <>
     <TooltipProvider>
       <div className="relative min-h-screen bg-background">
         {/* Desktop sidebar */}
@@ -395,5 +397,7 @@ export default function AdminLayout({
         </div>
       </div>
     </TooltipProvider>
+    <Toaster richColors={true} position="top-right" />
+    </>
   );
 }

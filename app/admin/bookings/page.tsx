@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   IconSearch,
   IconCalendar,
@@ -50,64 +50,56 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
-/*  Mock Data                                                          */
+/*  Helper Functions                                                  */
 /* ------------------------------------------------------------------ */
-const initialBookings = [
-  {
-    id: "BK-7214",
-    user: "Abebe K.",
-    provider: "Dawit Bekele",
-    service: "Tour Guide",
-    date: "March 24, 2024",
-    status: "confirmed",
-    amount: "ETB 1,200",
-    email: "abebe@example.com",
-  },
-  {
-    id: "BK-8829",
-    user: "Sara M.",
-    provider: "Yonas Haile",
-    service: "Driver",
-    date: "March 25, 2024",
-    status: "pending",
-    amount: "ETB 850",
-    email: "sara.m@example.com",
-  },
-  {
-    id: "BK-9031",
-    user: "Liya T.",
-    provider: "Sara Tadesse",
-    service: "Translator",
-    date: "March 25, 2024",
-    status: "confirmed",
-    amount: "ETB 1,500",
-    email: "liya.t@example.com",
-  },
-  {
-    id: "BK-1142",
-    user: "Kedir A.",
-    provider: "Meron Alemu",
-    service: "Resort Guide",
-    date: "March 26, 2024",
-    status: "cancelled",
-    amount: "ETB 3,200",
-    email: "kedir.a@example.com",
-  },
-];
+function formatCategory(category: string) {
+  if (!category) return "Unknown";
+  return category
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
-/* ------------------------------------------------------------------ */
-/*  Page Component                                                    */
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 /* ------------------------------------------------------------------ */
 
 export default function BookingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const filteredBookings = initialBookings.filter((b) => {
+  useEffect(() => {
+    async function fetchBookings() {
+      try {
+        const res = await fetch("/api/bookings");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        setBookings(data.bookings || []);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchBookings();
+  }, []);
+
+  const filteredBookings = bookings.filter((b) => {
+    const bookingId = b._id.toString();
+    const userName = b.userId?.name || "";
+    const providerName = b.providerId?.name || "";
+    
     const matchesSearch =
-      b.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      b.provider.toLowerCase().includes(searchTerm.toLowerCase());
+      bookingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      providerName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || b.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -180,32 +172,40 @@ export default function BookingsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredBookings.length > 0 ? (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-48 text-center text-muted-foreground">
+                    Loading bookings...
+                  </TableCell>
+                </TableRow>
+              ) : filteredBookings.length > 0 ? (
                 filteredBookings.map((booking) => (
                   <TableRow
-                    key={booking.id}
+                    key={booking._id}
                     className="group transition-colors hover:bg-muted/20 border-border/50 whitespace-nowrap"
                   >
                     <TableCell className="pl-6 py-4">
                         <div className="flex flex-col">
-                           <span className="font-bold text-primary tracking-tight">{booking.id}</span>
+                           <span className="font-bold text-primary tracking-tight">
+                              BK-{booking._id.toString().slice(-6).toUpperCase()}
+                           </span>
                            <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
-                               <IconCalendar className="size-2.5" /> {booking.date}
+                               <IconCalendar className="size-2.5" /> {formatDate(booking.scheduledAt || booking.createdAt)}
                            </span>
                         </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{booking.user}</span>
-                        <span className="text-xs text-muted-foreground">{booking.email}</span>
+                        <span className="font-medium">{booking.userId?.name || "Unknown User"}</span>
+                        <span className="text-xs text-muted-foreground">{booking.userId?.email || "No email"}</span>
                       </div>
                     </TableCell>
                     <TableCell className="font-medium text-muted-foreground">
-                      {booking.provider}
+                      {booking.providerId?.name || "Unknown Provider"}
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="font-medium bg-secondary/50">
-                        {booking.service}
+                        {formatCategory(booking.providerId?.category)}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -229,7 +229,7 @@ export default function BookingsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right font-bold tabular-nums">
-                      {booking.amount}
+                      ETB {booking.providerId?.price || 0}
                     </TableCell>
                     <TableCell className="pr-6">
                       <DropdownMenu>

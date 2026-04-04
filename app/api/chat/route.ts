@@ -1,4 +1,4 @@
-import { google } from "@ai-sdk/google";
+import { mistral } from "@ai-sdk/mistral";
 import {
   convertToModelMessages,
   createUIMessageStream,
@@ -18,14 +18,24 @@ import {
 import { getTextFromUIMessage } from "@/lib/message-text";
 import { ChatSession } from "@/lib/models/chat-session";
 import type { ProviderCategory } from "@/lib/models/provider";
-import { classifyGeminiFailure } from "@/lib/gemini-errors";
 import { getTopProvidersForCategory } from "@/lib/provider-query";
 
 export const maxDuration = 60;
 
-const modelId = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
+// The model ID can be changed in .env or defaults to mistral-large-latest
+const DEFAULT_MODEL = "mistral-large-latest";
 
 export async function POST(req: Request) {
+  const modelId = process.env.MISTRAL_MODEL || DEFAULT_MODEL;
+
+  if (!process.env.MISTRAL_API_KEY) {
+    return new Response(
+      JSON.stringify({
+        error: "Missing MISTRAL_API_KEY in environment variables.",
+      }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
   const auth = await getAuth();
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
@@ -59,18 +69,18 @@ export async function POST(req: Request) {
   let classification;
   try {
     const result = await generateObject({
-      model: google(modelId),
+      model: mistral(modelId),
       schema: classificationSchema,
       system: classifierSystem,
       messages: modelMessages,
       maxRetries: 0,
     });
     classification = result.object;
-  } catch (e) {
+  } catch (e: any) {
     console.error("concierge classify", e);
-    const { status, code, message } = classifyGeminiFailure(e);
-    return new Response(JSON.stringify({ error: message, code }), {
-      status,
+    const message = e.message || "Failed to classify intent.";
+    return new Response(JSON.stringify({ error: message, code: "MISTRAL_ERROR" }), {
+      status: 502,
       headers: { "Content-Type": "application/json" },
     });
   }
@@ -106,7 +116,7 @@ export async function POST(req: Request) {
           });
         }
         const result = streamText({
-          model: google(modelId),
+          model: mistral(modelId),
           system,
           messages: modelMessages,
           maxRetries: 0,

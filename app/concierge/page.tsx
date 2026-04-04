@@ -7,7 +7,7 @@ export default async function ConciergePage({
 }) {
   const q = (await searchParams).q;
   return (
-    <div className="container max-w-4xl py-6">
+    <div className="h-100dvh w-full bg-white flex">
       <ConciergeChat initialPrompt={q} />
     </div>
   );

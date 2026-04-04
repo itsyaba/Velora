@@ -9,7 +9,7 @@ const mongoGlobal = global as typeof globalThis & {
   mongoose: dbCache;
 };
 
-const MONGODB_URI = process.env.DATABASE_URL as string;
+const MONGODB_URI = (process.env.DATABASE_URL as string) || "mongodb://127.0.0.1:27017/velora";
 
 if (!MONGODB_URI) {
   throw new Error("Please define the DATABASE_URL environment variable");

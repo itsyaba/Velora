@@ -50,13 +50,14 @@ type LandingChatProps = {
 export function LandingChat({ isLoggedIn }: LandingChatProps) {
   const router = useRouter();
   const [value, setValue] = useState("");
-  const [model, setModel] = useState("gemini-2.0-flash");
+  const [language, setLanguage] = useState("en");
 
   function goWithMessage(text: string) {
     const t = text.trim();
     if (!t) return;
+    const url = `/concierge?q=${encodeURIComponent(t)}&lang=${language}`;
     if (isLoggedIn) {
-      router.push(`/concierge?q=${encodeURIComponent(t)}`);
+      router.push(url);
       return;
     }
     try {
@@ -64,7 +65,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
     } catch {
       /* ignore */
     }
-    router.push(`/login?callbackUrl=${encodeURIComponent("/concierge")}`);
+    router.push(`/login?callbackUrl=${encodeURIComponent(url)}`);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -117,10 +118,9 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
           </div>
         </main>
       </div>
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 relative z-999 ">
+      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 relative z-[50]">
         <div className="mb-10 flex flex-col items-center gap-4">
           <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-            {/* <OrangeStar /> */}
             <h1 className="text-center text-[2rem] font-medium leading-tight tracking-tight text-foreground md:text-5xl md:leading-[1.15] [font-family:var(--font-cormorant),ui-serif,Georgia,serif]">
               Where shall we explore?
             </h1>
@@ -170,16 +170,16 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
               </Button>
 
               <div className="flex items-center gap-1 sm:gap-2">
-                <Select value={model} onValueChange={setModel}>
+                <Select value={language} onValueChange={setLanguage}>
                   <SelectTrigger
                     size="sm"
                     className="h-9 w-[min(100%,11rem)] rounded-full border-0 bg-muted/50 text-xs shadow-none md:text-sm"
                   >
-                    <SelectValue placeholder="Model" />
+                    <SelectValue placeholder="Language" />
                   </SelectTrigger>
                   <SelectContent align="end">
-                    <SelectItem value="gemini-2.0-flash">Gemini 2.0 Flash</SelectItem>
-                    <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="am">Amharic</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -202,7 +202,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
             <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[0.65rem]">
               Enter
             </kbd>{" "}
-            to send · Sign in if you haven&apos;t yet
+            to send · Sign in to start chatting
           </p>
         </form>
 

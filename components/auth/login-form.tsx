@@ -31,7 +31,7 @@ export function LoginForm({
   const redirectAfterLogin =
     searchParams.get("callbackUrl") ??
     searchParams.get("callbackURL") ??
-    "/dashboard";
+    "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

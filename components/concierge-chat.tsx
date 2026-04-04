@@ -35,8 +35,10 @@ const LANDING_PROMPT_KEY = "velora-landing-prompt";
 
 export function ConciergeChat({
   initialPrompt: initialFromUrl,
+  language = "en",
 }: {
   initialPrompt?: string;
+  language?: string;
 }) {
   const [ready, setReady] = useState(false);
   const [chatId, setChatId] = useState("");
@@ -71,16 +73,18 @@ export function ConciergeChat({
   }
 
   return (
-    <ConciergeChatInner chatId={chatId} initialPrompt={initialPrompt} />
+    <ConciergeChatInner chatId={chatId} initialPrompt={initialPrompt} language={language} />
   );
 }
 
 function ConciergeChatInner({
   chatId,
   initialPrompt,
+  language,
 }: {
   chatId: string;
   initialPrompt?: string;
+  language: string;
 }) {
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState<ProviderSuggestion[]>([]);
@@ -90,10 +94,10 @@ function ConciergeChatInner({
       new DefaultChatTransport<ConciergeUIMessage>({
         api: "/api/chat",
         prepareSendMessagesRequest: ({ id, messages }) => ({
-          body: { messages, sessionId: id },
+          body: { messages, sessionId: id, lang: language },
         }),
       }),
-    [],
+    [language],
   );
 
   const { messages, sendMessage, status, stop, error } =

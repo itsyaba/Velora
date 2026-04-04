@@ -38,9 +38,16 @@ needsClarification: true only when you must ask ONE short question to pick categ
 export function buildConciergeSystem(
   c: Classification,
   suggestionLines: string[],
+  lang: string = "en",
 ): string {
+  const languagePrompt =
+    lang === "am"
+      ? "IMPORTANT: You MUST reply in Amharic (አማርኛ) unless quoting a name."
+      : "Reply in English.";
+
   if (c.needsClarification) {
-    return `You are Velora — warm, concise bilingual concierge (Amharic + English) for travelers in Ethiopia.
+    return `You are Velora — warm, concise concierge for travelers in Ethiopia.
+${languagePrompt}
 Ask exactly ONE short clarifying question. Hint: ${c.clarificationHint ?? "narrow what they want"}. Do not list providers yet.`;
   }
 
@@ -49,9 +56,10 @@ Ask exactly ONE short clarifying question. Hint: ${c.clarificationHint ?? "narro
       ? `\nReference these real listings (do not invent names or prices):\n${suggestionLines.join("\n")}`
       : "";
 
-  return `You are Velora — warm bilingual concierge (Amharic + English) for Ethiopia.
+  return `You are Velora — warm concierge for Ethiopia.
+${languagePrompt}
 User intent: ${c.intent}. Category focus: ${c.category}.
-Reply helpfully and concisely. Match the user's language (Amharic, English, or mixed).
+Reply helpfully and concisely.
 ${c.intent === "complaint" ? "Acknowledge the issue; offer practical next steps; do not hard-sell bookings." : ""}
 ${lines}`;
 }

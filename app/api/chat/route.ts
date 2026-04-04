@@ -52,6 +52,7 @@ export async function POST(req: Request) {
   const b = body as {
     messages?: unknown;
     sessionId?: unknown;
+    lang?: unknown;
   };
 
   if (!Array.isArray(b.messages)) {
@@ -63,6 +64,8 @@ export async function POST(req: Request) {
     typeof b.sessionId === "string" && b.sessionId.length > 0
       ? b.sessionId
       : randomUUID();
+
+  const lang = typeof b.lang === "string" ? b.lang : "en";
 
   const modelMessages = await convertToModelMessages(messages);
 
@@ -100,7 +103,7 @@ export async function POST(req: Request) {
       `${i + 1}. ${s.name} (${s.category}) — ${s.price} ETB — ${s.languages.join(", ")} — ${s.description}`,
   );
 
-  const system = buildConciergeSystem(classification, suggestionLines);
+  const system = buildConciergeSystem(classification, suggestionLines, lang);
 
   const lastUser = [...messages].reverse().find((m) => m.role === "user");
   const userText = lastUser ? getTextFromUIMessage(lastUser) : "";

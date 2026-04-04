@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -339,16 +339,29 @@ function TopNavbar({
 /* ------------------------------------------------------------------ */
 /*  Admin layout                                                       */
 /* ------------------------------------------------------------------ */
+import { authClient } from "@/lib/auth-client";
+
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { data: session, isPending } = authClient.useSession();
+  const router = useRouter();
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pageTitle = getPageTitle(pathname);
+
+  if (isPending) {
+    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+  }
+
+  if (!session || session.user.role !== "admin") {
+    if (typeof window !== "undefined") router.replace("/");
+    return null;
+  }
 
   return (
     <>

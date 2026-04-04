@@ -145,4 +145,45 @@
   .container {
     @apply mx-auto px-4 lg:px-0;
   }
+
+  /* Markdown Container Styles */
+  .markdown-container {
+    @apply text-[16px] leading-[1.6] text-[#111111];
+  }
+
+  .markdown-container p {
+    @apply mb-4 last:mb-0;
+  }
+
+  .markdown-container strong {
+    @apply font-semibold text-black;
+  }
+
+  .markdown-container ul, .markdown-container ol {
+    @apply mb-4 pl-6 space-y-1.5;
+  }
+
+  .markdown-container ul {
+    @apply list-disc;
+  }
+
+  .markdown-container ol {
+    @apply list-decimal;
+  }
+
+  .markdown-container li {
+    @apply pl-1;
+  }
+
+  .markdown-container li > p {
+    @apply mb-0 inline;
+  }
+
+  .markdown-container h1, .markdown-container h2, .markdown-container h3 {
+    @apply font-semibold text-black mb-3 mt-6 first:mt-0;
+  }
+
+  .markdown-container h1 { @apply text-xl; }
+  .markdown-container h2 { @apply text-lg; }
+  .markdown-container h3 { @apply text-base; }
 }

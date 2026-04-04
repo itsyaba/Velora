@@ -2,16 +2,28 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { Loader2, MessageCircle, Send } from "lucide-react";
+import {
+  Plus,
+  PanelLeft,
+  Search,
+  Settings,
+  ChevronDown,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  RotateCcw,
+  AudioLines,
+  ArrowUp,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { getTextFromUIMessage } from "@/lib/message-text";
 import type { ProviderSuggestion } from "@/lib/provider-query";
-import { cn } from "@/lib/utils";
 
 export type ConciergeUIMessage = UIMessage<
   unknown,
@@ -52,8 +64,8 @@ export function ConciergeChat({
 
   if (!ready) {
     return (
-      <div className="flex h-[min(100dvh,720px)] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-screen w-full items-center justify-center bg-white">
+        <div className="animate-pulse h-8 w-8 rounded-full bg-muted" />
       </div>
     );
   }
@@ -127,155 +139,213 @@ function ConciergeChatInner({
   }
 
   return (
-    <div className="flex flex-col gap-4 h-[min(100dvh,800px)] max-w-3xl mx-auto w-full px-3 py-6">
-      <div className="flex items-center gap-2">
-        <MessageCircle className="h-6 w-6" />
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">AI Concierge</h1>
-          <p className="text-sm text-muted-foreground">
-            Amharic & English · guides, drivers, translators, experiences
-          </p>
+    <div className="flex h-dvh w-full bg-[#FCFCFC] text-sm font-sans relative overflow-hidden">
+      {/* Sidebar */}
+      <div className="hidden md:flex w-[60px] flex-col justify-between items-center py-4 bg-[#F9F9F9] border-r border-[#E5E5E5] shrink-0">
+        <div className="flex flex-col gap-5 items-center text-[#666666]">
+          <button className="p-1 hover:text-black hover:bg-[#E5E5E5] rounded-md transition-colors">
+            <PanelLeft className="h-[18px] w-[18px]" />
+          </button>
+          <button className="p-[3px] border border-[#d4d4d4] rounded-full hover:text-black hover:border-black transition-colors">
+            <Plus className="h-[12px] w-[12px]" />
+          </button>
+          <button className="p-1 hover:text-black transition-colors rounded-md hover:bg-[#E5E5E5]">
+            <Search className="h-[18px] w-[18px]" />
+          </button>
+          <button className="p-1 hover:text-black transition-colors rounded-md hover:bg-[#E5E5E5]">
+            <Settings className="h-[18px] w-[18px]" />
+          </button>
+        </div>
+
+        <div className="flex flex-col gap-5 items-center text-[#666666]">
+          <button className="h-8 w-8 rounded-full bg-[#464542] text-white flex items-center justify-center text-[13px] font-medium shrink-0">
+            Y
+          </button>
         </div>
       </div>
 
-      <Card className="flex flex-1 flex-col min-h-0 border shadow-sm">
-        <CardHeader className="py-3 border-b">
-          <p className="text-sm text-muted-foreground">
-            Ask for a driver, say you’re bored tonight, or request a translator.
-          </p>
-        </CardHeader>
-        <CardContent className="flex-1 p-0 min-h-0 flex flex-col">
-          <ScrollArea className="flex-1 h-[420px] px-4">
-            <div className="space-y-4 py-4">
-              {messages.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  Start typing below — Velora will clarify and suggest local
-                  options.
-                </p>
-              )}
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={cn(
-                    "flex",
-                    m.role === "user" ? "justify-end" : "justify-start",
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
-                      m.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted",
-                    )}
-                  >
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col min-h-0 bg-white relative max-w-full">
+        {/* Header */}
+        <header className="absolute top-0 right-0 left-0 h-[52px] flex items-center justify-between px-4 z-10 bg-white">
+          <button className="flex items-center gap-1.5 text-[15px] font-medium text-[#333333] hover:bg-[#F3F3F3] px-2.5 py-1.5 rounded-md transition-colors">
+            AI Concierge <ChevronDown className="h-[14px] w-[14px] text-[#999999]" />
+          </button>
+          
+          <button className="border border-[#E5E5E5] px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-[#333333] hover:bg-[#F9F9F9] transition-colors shadow-sm">
+            Share
+          </button>
+        </header>
+
+        {/* Messages */}
+        <div className="flex-1 w-full overflow-y-auto overflow-x-hidden scroll-smooth">
+          <div className="max-w-[800px] mx-auto w-full px-5 md:px-8 pt-[72px] pb-[180px] flex flex-col gap-[32px]">
+            {messages.length === 0 && !busy && (
+              <div className="h-[50vh] flex flex-col items-center justify-center text-center opacity-0"></div>
+            )}
+            
+            {messages.map((m) => (
+              m.role === "user" ? (
+                <div key={m.id} className="flex justify-end group pl-10">
+                  <div className="bg-[#F3F3F3] text-[#111111] px-5 py-3 rounded-[24px] whitespace-pre-wrap text-[15px] leading-relaxed max-w-[80%] inline-block">
                     {getTextFromUIMessage(m)}
                   </div>
                 </div>
-              ))}
-              {busy && (
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Velora is thinking…
-                </div>
-              )}
-              {error && (
-                <p className="text-sm text-destructive">{error.message}</p>
-              )}
-            </div>
-          </ScrollArea>
-
-          {suggestions.length > 0 && (
-            <div className="border-t px-4 py-3 space-y-2 bg-muted/30">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Top matches
-              </p>
-              <div className="grid gap-2 sm:grid-cols-1">
-                {suggestions.map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex flex-col gap-2 rounded-md border bg-background p-3 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{s.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {s.category} · {s.languages.join(", ")}
-                      </p>
-                      <p className="text-xs mt-1 line-clamp-2">{s.description}</p>
-                      <p className="text-sm font-semibold mt-1">
-                        {s.price} ETB
-                      </p>
+              ) : (
+                <div key={m.id} className="flex justify-start group overflow-hidden">
+                  <div className="max-w-[100%] text-[#111111] leading-[1.6] flex flex-col items-start gap-3 w-full">
+                    <div className="markdown-container">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {getTextFromUIMessage(m)}
+                      </ReactMarkdown>
                     </div>
-                    <div className="flex gap-2 shrink-0">
-                      <Button
-                        size="sm"
-                        variant="default"
-                        type="button"
-                        disabled={busy}
-                        onClick={() => requestBooking(s.id)}
-                      >
-                        Book
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        type="button"
-                        disabled={busy}
-                        onClick={() => requestBooking(s.id)}
-                      >
-                        Request
-                      </Button>
+                    <div className="flex items-center gap-1.5 text-[#999999] opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button className="p-1.5 hover:bg-[#F4F4F4] hover:text-[#333333] rounded-md transition-colors" title="Copy"><Copy className="h-[15px] w-[15px]" /></button>
+                      <button className="p-1.5 hover:bg-[#F4F4F4] hover:text-[#333333] rounded-md transition-colors" title="Good response"><ThumbsUp className="h-[15px] w-[15px]" /></button>
+                      <button className="p-1.5 hover:bg-[#F4F4F4] hover:text-[#333333] rounded-md transition-colors" title="Bad response"><ThumbsDown className="h-[15px] w-[15px]" /></button>
+                      <button className="p-1.5 hover:bg-[#F4F4F4] hover:text-[#333333] rounded-md transition-colors" title="Retry"><RotateCcw className="h-[15px] w-[15px]" /></button>
                     </div>
                   </div>
-                ))}
+                </div>
+              )
+            ))}
+
+            {busy && (
+              <div className="flex justify-start items-center gap-2 pt-2">
+                <svg className="animate-spin h-6 w-6 text-[#D2765A]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v20" />
+                  <path d="M2 12h20" />
+                  <path d="m4.93 4.93 14.14 14.14" />
+                  <path d="m19.07 4.93-14.14 14.14" />
+                </svg>
               </div>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex flex-col gap-2 border-t pt-4">
-          <form
-            className="flex w-full gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const t = input.trim();
-              if (!t || busy) return;
-              setInput("");
-              setSuggestions([]);
-              void sendMessage({ text: t });
-            }}
-          >
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Try English or አማርኛ…"
-              className="min-h-[44px] resize-none"
-              rows={2}
-              disabled={busy}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  const t = input.trim();
-                  if (!t || busy) return;
-                  setInput("");
-                  setSuggestions([]);
-                  void sendMessage({ text: t });
-                }
+            )}
+
+            {error && (
+              <div className="flex justify-start pt-2">
+                <p className="text-[15px] text-destructive">{error.message}</p>
+              </div>
+            )}
+
+            {suggestions.length > 0 && (
+              <div className="bg-[#F8F9FA] border border-[#E5E5E5] rounded-xl px-5 py-4 w-full flex flex-col gap-3">
+                <p className="text-[12px] font-semibold text-[#666666] tracking-wider uppercase">
+                  Top matches
+                </p>
+                <div className="grid gap-3">
+                  {suggestions.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex flex-col gap-3 rounded-lg border border-[#E5E5E5] bg-white p-4 sm:flex-row sm:items-center sm:justify-between shadow-sm"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <p className="font-semibold text-[15px] text-[#111111]">{s.name}</p>
+                        <p className="text-[13px] text-[#666666] capitalize font-medium">
+                          {s.category} • {s.languages.join(", ")}
+                        </p>
+                        <p className="text-[14px] text-[#444444] mt-1 leading-relaxed max-w-[500px]">
+                          {s.description}
+                        </p>
+                        <p className="text-[14px] font-semibold text-[#111111] mt-1">
+                          {s.price} ETB
+                        </p>
+                      </div>
+                      <div className="flex gap-2 shrink-0">
+                        <Button
+                          size="sm"
+                          className="bg-[#111111] text-white hover:bg-[#333333] transition-colors rounded-lg font-medium"
+                          disabled={busy}
+                          onClick={() => requestBooking(s.id)}
+                        >
+                          Book Now
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="rounded-lg font-medium text-[#333333] border-[#E5E5E5]"
+                          disabled={busy}
+                          onClick={() => requestBooking(s.id)}
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Input section fixed at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-white/0 pt-16 pb-4">
+          <div className="max-w-[800px] mx-auto w-full px-4 md:px-8">
+            <form
+              className="flex flex-col bg-white border border-[#E1E1E1] rounded-[24px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.08)] focus-within:border-[#D4D4D4] transition-all duration-200 overflow-hidden"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const t = input.trim();
+                if (!t || busy) return;
+                setInput("");
+                setSuggestions([]);
+                void sendMessage({ text: t });
               }}
-            />
-            <div className="flex flex-col gap-2">
-              {busy ? (
-                <Button type="button" variant="secondary" onClick={() => stop()}>
-                  Stop
-                </Button>
-              ) : (
-                <Button type="submit" size="icon" disabled={!input.trim()}>
-                  <Send className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardFooter>
-      </Card>
+            >
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Reply..."
+                className="min-h-[52px] px-4 pt-3.5 pb-2 resize-none border-0 shadow-none focus-visible:ring-0 bg-transparent text-[16px] placeholder:text-[#999999]"
+                rows={1}
+                disabled={busy}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    const t = input.trim();
+                    if (!t || busy) return;
+                    setInput("");
+                    setSuggestions([]);
+                    void sendMessage({ text: t });
+                  }
+                }}
+              />
+              <div className="flex items-center justify-between px-3 pb-2 pt-1">
+                <button 
+                  type="button" 
+                  className="p-1.5 rounded-full text-[#666666] hover:bg-[#F3F3F3] hover:text-[#111111] transition-colors shrink-0"
+                >
+                  <Plus className="h-[18px] w-[18px]" />
+                </button>
+                <div className="flex items-center gap-1">
+                  <div className="w-1" />
+                  
+                  {!input.trim() && !busy ? (
+                    <button 
+                      type="button" 
+                      className="p-1.5 rounded-full text-[#666666] hover:bg-[#F3F3F3] hover:text-[#111111] transition-colors ml-1"
+                    >
+                      <AudioLines className="h-[18px] w-[18px]" />
+                    </button>
+                  ) : (
+                    <button 
+                      type={busy ? "button" : "submit"} 
+                      onClick={busy ? () => stop() : undefined} 
+                      className="w-8 h-8 rounded-full bg-[#111111] text-white flex justify-center items-center hover:bg-[#333333] transition-colors shrink-0 ml-2"
+                    >
+                      {busy ? (
+                        <div className="h-3 w-3 bg-white rounded-sm" />
+                      ) : (
+                        <ArrowUp className="h-[18px] w-[18px] stroke-[2.5]" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+            <div className="h-4" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

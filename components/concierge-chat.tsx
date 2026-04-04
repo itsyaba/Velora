@@ -124,10 +124,11 @@ function ConciergeChatInner({
 
   async function requestBooking(providerId: string) {
     try {
+      const scheduledAt = new Date(Date.now() + 86400000).toISOString(); // Default to tomorrow
       const res = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ providerId }),
+        body: JSON.stringify({ providerId, scheduledAt, notes: "Booked via Concierge" }),
         credentials: "include",
       });
       const data = (await res.json().catch(() => ({}))) as {

@@ -16,10 +16,15 @@ export async function getTopProvidersForCategory(
   category: ProviderCategory | "other",
   limit = 3,
 ): Promise<ProviderSuggestion[]> {
+  let catFilter: any = category;
+  if (category === "guide") {
+    catFilter = { $in: ["guide", "tour_guide", "resort_guide"] };
+  }
+
   const filter =
     category === "other"
       ? { availability: true }
-      : { category, availability: true };
+      : { category: catFilter, availability: true };
 
   const docs = await Provider.find(filter)
     .sort({ featured: -1, rating: -1, price: 1 })

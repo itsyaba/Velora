@@ -33,7 +33,7 @@ intent:
 
 category: best marketplace match — guide, driver, translator, experience, spa, resort, or other.
 
-needsClarification: true only when you must ask ONE short question to pick category or style (e.g. cultural vs nightlife). Optional clarificationHint in English.`;
+needsClarification: true ONLY when the category is completely unknown or ambiguous (e.g., "I'm feeling bored" -> need to know if they want nightlife or cultural experience). If the user has already stated or implied a category (like driver, guide, spa, etc.), this MUST be false so we can show them options from our backend. Never ask more than one clarification question before showing options. Optional clarificationHint in English.`;
 
 export function buildConciergeSystem(
   c: Classification,
@@ -54,7 +54,7 @@ Ask exactly ONE short clarifying question. Hint: ${c.clarificationHint ?? "narro
   const lines =
     suggestionLines.length > 0
       ? `\nReference these real listings (do not invent names or prices):\n${suggestionLines.join("\n")}`
-      : "";
+      : `\nCRITICAL: We searched the backend for [${c.category}] and found NO available listings. You MUST inform the user that no providers are currently available for this category. DO NOT offer to find recommendations for this category and DO NOT ask if they want recommendations for it, because we have none.`;
 
   return `You are Velora — warm concierge for Ethiopia.
 ${languagePrompt}

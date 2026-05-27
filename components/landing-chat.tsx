@@ -70,7 +70,7 @@ function goToNext(
 function TripCard({ trip }: { trip: (typeof SIDE_TRIPS)[number] }) {
   return (
     <article
-      className={`absolute overflow-hidden rounded-[1.45rem] bg-neutral-200 shadow-[0_28px_80px_rgba(15,23,42,0.18)] ${trip.className}`}
+      className={`absolute overflow-hidden rounded-[1.45rem] bg-neutral-200 dark:bg-neutral-800 shadow-[0_28px_80px_rgba(15,23,42,0.18)] ${trip.className}`}
       aria-label={`${trip.city}, ${trip.country}`}
     >
       <div
@@ -105,7 +105,7 @@ function TripCard({ trip }: { trip: (typeof SIDE_TRIPS)[number] }) {
 function GhostTripCard({ trip }: { trip: (typeof GHOST_TRIPS)[number] }) {
   return (
     <article
-      className={`absolute hidden h-60 w-40 overflow-hidden rounded-[1.35rem] bg-neutral-100 opacity-30 blur-[1px] md:block ${trip.className}`}
+      className={`absolute hidden h-60 w-40 overflow-hidden rounded-[1.35rem] bg-neutral-100 dark:bg-neutral-800 opacity-30 blur-[1px] md:block ${trip.className}`}
       aria-label={trip.city}
     >
       <div
@@ -131,7 +131,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
   }
 
   return (
-    <section className="relative isolate min-h-[calc(100vh-4.5rem)] overflow-hidden bg-white text-[#090b1a]">
+    <section className="relative isolate min-h-[calc(100vh-4.5rem)] overflow-hidden bg-background text-foreground">
       <div className="container relative mx-auto flex max-w-[100rem] flex-col items-center px-5 pb-8 pt-9 text-center sm:pt-12 md:px-14 lg:px-20">
         <div className="mx-auto max-w-[54rem]">
           <h1 className="text-balance text-[clamp(2.45rem,4.45vw,4.25rem)] font-semibold leading-[0.98] tracking-normal">
@@ -142,14 +142,14 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
             with a bilingual AI concierge.
           </h1>
 
-          <p className="mx-auto mt-5 max-w-[33rem] text-sm leading-6 text-[#646a76] sm:text-base">
+          <p className="mx-auto mt-5 max-w-[33rem] text-sm leading-6 text-muted-foreground sm:text-base">
             Book trusted local guides, drivers, and translators in Amharic or
             English — get matched and confirmed in seconds.
           </p>
 
           <form
             onSubmit={handleSubmit}
-            className="mx-auto mt-6 flex h-14 w-full max-w-[27rem] items-center gap-2 rounded-[1.25rem] border border-[#e9edf5] bg-white p-1.5 shadow-[0_18px_60px_rgba(31,53,92,0.08)]"
+            className="mx-auto mt-6 flex h-14 w-full max-w-[27rem] items-center gap-2 rounded-[1.25rem] border border-border bg-background p-1.5 shadow-[0_18px_60px_rgba(31,53,92,0.08)]"
           >
             <label className="sr-only" htmlFor="landing-prompt">
               Where do you want to go?
@@ -162,7 +162,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Where do you want to go?"
               autoComplete="off"
-              className="min-h-11 flex-1 border-0 bg-transparent px-1 text-sm text-[#1f2430] outline-none placeholder:text-[#9aa2b1]"
+              className="min-h-11 flex-1 border-0 bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground"
             />
             <Button
               type="submit"
@@ -174,7 +174,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
             </Button>
           </form>
 
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.72rem] text-[#8a92a3]">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.72rem] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Languages className="size-3.5 text-[#a6adb9]" />
               Speaks Amharic &amp; English
@@ -198,9 +198,9 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
           <TripCard trip={SIDE_TRIPS[1]} />
 
           {/* Phone frame */}
-          <div className="absolute left-1/2 top-0 z-30 h-[26rem] w-[15.5rem] -translate-x-1/2 rounded-[2.25rem] border border-[#e7ebf3] bg-[#f8fafc] p-2.5 shadow-[0_30px_90px_rgba(24,35,67,0.18)] md:h-[29rem] md:w-[17.5rem]">
+          <div className="absolute left-1/2 top-0 z-30 h-[26rem] w-[15.5rem] -translate-x-1/2 rounded-[2.25rem] border border-border bg-card p-2.5 shadow-[0_30px_90px_rgba(24,35,67,0.18)] md:h-[29rem] md:w-[17.5rem]">
             {/* Status bar */}
-            <div className="mb-2 flex items-center justify-between px-3 text-[0.7rem] font-semibold text-[#171b26]">
+            <div className="mb-2 flex items-center justify-between px-3 text-[0.7rem] font-semibold text-foreground">
               <span>9:41</span>
               <span className="flex items-center gap-1">
                 <Signal className="size-3" />
@@ -211,11 +211,11 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
 
             {/* Pill tabs */}
             <div className="mb-2 flex items-center justify-between px-1">
-              <div className="flex rounded-full bg-white p-0.5 text-[0.65rem] font-medium shadow-sm">
-                <span className="rounded-full px-2.5 py-1 text-[#8a92a3]">
+              <div className="flex rounded-full bg-background p-0.5 text-[0.65rem] font-medium shadow-sm">
+                <span className="rounded-full px-2.5 py-1 text-muted-foreground">
                   Active
                 </span>
-                <span className="rounded-full bg-[#eaf2ff] px-3 py-1 text-[#1f6fff]">
+                <span className="rounded-full bg-[#eaf2ff] px-3 py-1 text-[#1f6fff] dark:bg-muted/30 dark:text-primary">
                   Past
                 </span>
               </div>
@@ -230,7 +230,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
             </div>
 
             {/* Trip card inside phone */}
-            <div className="relative h-[calc(100%-5.5rem)] overflow-hidden rounded-[1.5rem] bg-neutral-200 shadow-[0_18px_45px_rgba(15,23,42,0.16)]">
+            <div className="relative h-[calc(100%-5.5rem)] overflow-hidden rounded-[1.5rem] bg-neutral-200 dark:bg-neutral-800 shadow-[0_18px_45px_rgba(15,23,42,0.16)]">
               <div
                 className="absolute inset-0 bg-cover bg-center"
                 style={{
@@ -238,7 +238,7 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
                 }}
               />
               <div className="relative flex h-full flex-col justify-between p-3 text-white">
-                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[0.65rem] font-medium text-[#1b1f2a] shadow-sm">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[0.65rem] font-medium text-foreground shadow-sm">
                   <MapPin className="size-3 fill-[#d33] text-[#d33]" />
                   Ethiopia
                 </span>

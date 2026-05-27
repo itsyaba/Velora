@@ -41,14 +41,14 @@ const DESTINATIONS = [
 
 export default function Destinations() {
   return (
-    <section className="relative bg-white py-20 sm:py-24">
+    <section className="relative bg-background py-20 sm:py-24">
       <div className="container mx-auto max-w-[100rem] px-5 md:px-14 lg:px-20">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-[34rem]">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#e7ebf3] bg-[#f8fafc] px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wider text-[#646a76]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/20 px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">
               Where to next
             </span>
-            <h2 className="mt-4 text-balance text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-tight tracking-tight text-[#090b1a]">
+            <h2 className="mt-4 text-balance text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-tight tracking-tight text-foreground">
               Pick a place. We'll{" "}
               <span className="font-serif italic text-[#2672ff] [font-family:var(--font-cormorant),Georgia,serif]">
                 handle
@@ -56,7 +56,7 @@ export default function Destinations() {
               the rest.
             </h2>
           </div>
-          <p className="max-w-[26rem] text-sm leading-6 text-[#646a76] sm:text-base">
+          <p className="max-w-[26rem] text-sm leading-6 text-muted-foreground sm:text-base">
             Popular destinations our travelers ask about most. The concierge
             already knows the best guides and drivers in each one.
           </p>
@@ -66,7 +66,7 @@ export default function Destinations() {
           {DESTINATIONS.map((destination) => (
             <article
               key={destination.name}
-              className="group relative h-72 overflow-hidden rounded-2xl bg-neutral-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition-transform hover:-translate-y-1"
+              className="group relative h-72 overflow-hidden rounded-2xl bg-neutral-200 dark:bg-neutral-800 shadow-[0_18px_45px_rgba(15,23,42,0.08)] transition-transform hover:-translate-y-1 border border-transparent dark:border-border/30"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"

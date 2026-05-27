@@ -30,7 +30,7 @@ const LINK_GROUPS = [
 
 export default function LandingFooter() {
   return (
-    <footer className="border-t border-[#e9edf5] bg-white">
+    <footer className="border-t border-border bg-background">
       <div className="container mx-auto max-w-[100rem] px-5 py-14 md:px-14 lg:px-20">
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
@@ -41,11 +41,11 @@ export default function LandingFooter() {
                   strokeWidth={2.5}
                 />
               </span>
-            <span className="text-xl font-bold tracking-tight text-[#1b1f2a]">
+            <span className="text-xl font-bold tracking-tight text-foreground">
               Guzo AI
             </span>
             </Link>
-            <p className="mt-4 max-w-[22rem] text-sm leading-6 text-[#646a76]">
+            <p className="mt-4 max-w-[22rem] text-sm leading-6 text-muted-foreground">
               A bilingual AI concierge for Ethiopia. Book trusted guides,
               drivers, and translators — in Amharic or English.
             </p>
@@ -53,7 +53,7 @@ export default function LandingFooter() {
 
           {LINK_GROUPS.map((group) => (
             <div key={group.title}>
-              <h3 className="text-[0.7rem] font-semibold uppercase tracking-wider text-[#8a92a3]">
+              <h3 className="text-[0.7rem] font-semibold uppercase tracking-wider text-muted-foreground">
                 {group.title}
               </h3>
               <ul className="mt-4 space-y-3">
@@ -61,7 +61,7 @@ export default function LandingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[#1b1f2a] transition-colors hover:text-[#1f6fff]"
+                      className="text-sm text-foreground transition-colors hover:text-[#1f6fff]"
                     >
                       {link.label}
                     </Link>

@@ -42,20 +42,20 @@ const FEATURES = [
 
 export default function Features() {
   return (
-    <section className="relative bg-[#f7f9fc] py-20 sm:py-24">
+    <section className="relative bg-muted/20 py-20 sm:py-24">
       <div className="container mx-auto max-w-[100rem] px-5 md:px-14 lg:px-20">
         <div className="mx-auto max-w-[40rem] text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#e7ebf3] bg-white px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wider text-[#646a76]">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wider text-muted-foreground">
             Why guzoAI
           </span>
-          <h2 className="mt-4 text-balance text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-tight tracking-tight text-[#090b1a]">
+          <h2 className="mt-4 text-balance text-[clamp(1.8rem,3vw,2.6rem)] font-semibold leading-tight tracking-tight text-foreground">
             Built for travel{" "}
             <span className="font-serif italic text-[#2672ff] [font-family:var(--font-cormorant),Georgia,serif]">
               inside
             </span>{" "}
             Ethiopia.
           </h2>
-          <p className="mx-auto mt-3 max-w-[34rem] text-sm leading-6 text-[#646a76] sm:text-base">
+          <p className="mx-auto mt-3 max-w-[34rem] text-sm leading-6 text-muted-foreground sm:text-base">
             Built around the realities of Ethiopian travel — the languages, the
             distances, the providers, and the way bookings actually happen.
           </p>
@@ -67,15 +67,15 @@ export default function Features() {
             return (
               <div
                 key={feature.title}
-                className="rounded-2xl border border-[#e9edf5] bg-white p-6 shadow-[0_18px_45px_rgba(31,53,92,0.04)] transition-shadow hover:shadow-[0_24px_60px_rgba(31,53,92,0.08)]"
+                className="rounded-2xl border border-border bg-card p-6 shadow-[0_18px_45px_rgba(31,53,92,0.04)] transition-shadow hover:shadow-[0_24px_60px_rgba(31,53,92,0.08)]"
               >
                 <span className="flex size-10 items-center justify-center rounded-xl bg-[#eaf2ff] text-[#1f6fff]">
                   <Icon className="size-5" />
                 </span>
-                <h3 className="mt-5 text-base font-semibold text-[#090b1a]">
+                <h3 className="mt-5 text-base font-semibold text-foreground">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm leading-6 text-[#646a76]">
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {feature.body}
                 </p>
               </div>

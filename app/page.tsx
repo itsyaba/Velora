@@ -26,14 +26,14 @@ export default async function page() {
       .toUpperCase()
       .slice(0, 2) ?? "U";
   return (
-    <div className="relative flex min-h-screen flex-col bg-white">
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">
+    <div className="relative flex min-h-screen flex-col bg-background">
+      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto flex h-[4.5rem] max-w-[100rem] items-center justify-between px-5 md:px-14 lg:px-20">
           <Link href="/" className="flex items-center gap-2">
             <span className="flex size-6 items-center justify-center rounded-full bg-[#eaf2ff] text-[#1f6fff]">
               <CircleDot className="size-5 fill-[#1f6fff]/25" strokeWidth={2.5} />
             </span>
-            <span className="text-xl font-bold tracking-tight text-[#1b1f2a]">Guzo AI</span>
+            <span className="text-xl font-bold tracking-tight text-foreground">Guzo AI</span>
           </Link>
           <nav className="flex items-center gap-2">
             {session?.user ? (

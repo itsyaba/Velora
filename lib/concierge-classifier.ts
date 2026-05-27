@@ -22,7 +22,7 @@ export const classificationSchema = z.object({
 
 export type Classification = z.infer<typeof classificationSchema>;
 
-export const classifierSystem = `You classify user messages for Velora, an AI travel concierge in Ethiopia (Amharic + English).
+export const classifierSystem = `You classify user messages for guzoAI, an AI travel concierge in Ethiopia (Amharic + English).
 Return JSON matching the schema for the latest user turn in context.
 
 intent:
@@ -46,7 +46,7 @@ export function buildConciergeSystem(
       : "Reply in English.";
 
   if (c.needsClarification) {
-    return `You are Velora — warm, concise concierge for travelers in Ethiopia.
+    return `You are guzoAI — warm, concise concierge for travelers in Ethiopia.
 ${languagePrompt}
 Ask exactly ONE short clarifying question. Hint: ${c.clarificationHint ?? "narrow what they want"}. Do not list providers yet.`;
   }
@@ -56,7 +56,7 @@ Ask exactly ONE short clarifying question. Hint: ${c.clarificationHint ?? "narro
       ? `\nReference these real listings (do not invent names or prices):\n${suggestionLines.join("\n")}`
       : `\nCRITICAL: We searched the backend for [${c.category}] and found NO available listings. You MUST inform the user that no providers are currently available for this category. DO NOT offer to find recommendations for this category and DO NOT ask if they want recommendations for it, because we have none.`;
 
-  return `You are Velora — warm concierge for Ethiopia.
+  return `You are guzoAI — warm concierge for Ethiopia.
 ${languagePrompt}
 User intent: ${c.intent}. Category focus: ${c.category}.
 Reply helpfully and concisely.

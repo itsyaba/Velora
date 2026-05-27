@@ -22,7 +22,7 @@ const cormorant = Cormorant({
 });
 
 export const metadata: Metadata = {
-  title: "Velora — AI Concierge",
+  title: "guzoAI — AI Travel Concierge",
   description:
     "Book guides, drivers, and translators in Ethiopia with bilingual AI.",
 };

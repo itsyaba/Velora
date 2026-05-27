@@ -30,8 +30,8 @@ export type ConciergeUIMessage = UIMessage<
   { suggestions: ProviderSuggestion[] }
 >;
 
-const SESSION_KEY = "velora-concierge-session";
-const LANDING_PROMPT_KEY = "velora-landing-prompt";
+const SESSION_KEY = "guzoai-concierge-session";
+const LANDING_PROMPT_KEY = "guzoai-landing-prompt";
 
 export function ConciergeChat({
   initialPrompt: initialFromUrl,

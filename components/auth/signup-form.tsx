@@ -15,11 +15,15 @@ import { toast } from "sonner";
 import { IconLoader } from "@tabler/icons-react";
 import { PasswordInput } from "../ui/password-input";
 
-export function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
+type SignupFormProps = React.ComponentProps<"div"> & {
+  initialEmail?: string;
+};
+
+export function SignupForm({ className, initialEmail = "", ...props }: SignupFormProps) {
   const router = useRouter();
 
   const [fullname, setFullname] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -165,7 +169,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_17_40)">
+                <g clipPath="url(#clip0_17_40)">
                   <path
                     d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z"
                     fill="#4285F4"
@@ -247,7 +251,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<"div">)
                 fill="currentColor"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g clip-path="url(#clip0_910_21)">
+                <g clipPath="url(#clip0_910_21)">
                   <path
                     fillRule="evenodd"
                     clipRule="evenodd"

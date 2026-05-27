@@ -1,228 +1,274 @@
 "use client";
 
-import { Car, Coffee, Languages, Mic, Moon, Plus, Sparkles } from "lucide-react";
+import {
+  BatteryFull,
+  CalendarDays,
+  Languages,
+  MapPin,
+  Send,
+  ShieldCheck,
+  Signal,
+  UsersRound,
+  Wifi,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-
-const PENDING_KEY = "velora-landing-prompt";
-
-const QUICK_PROMPTS = [
-  { icon: Car, label: "Driver", text: "I need a driver in Addis Ababa today." },
-  { icon: Sparkles, label: "Guide", text: "I want a tour guide who speaks English." },
-  { icon: Languages, label: "Translator", text: "I need a translator for a meeting." },
-  { icon: Moon, label: "Tonight", text: "What can I do tonight in Addis?" },
-  { icon: Coffee, label: "Relax", text: "Suggest a spa or relaxing experience nearby." },
-] as const;
-
-const Line = ({ className = "" }) => (
-  <div
-    className={cn(
-      "h-px w-full via-zinc-400 from-1% from-zinc-200 to-zinc-600 absolute z-0 dark:via-zinc-700 dark:from-zinc-900 dark:to-zinc-500",
-      className,
-    )}
-  />
-);
-
-function OrangeStar() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0 text-orange-500 md:h-7 md:w-7" aria-hidden>
-      <path
-        fill="currentColor"
-        d="M12 1.5l2.2 6.8h7.1l-5.7 4.4 2.2 6.8-6-4.4-6 4.4 2.2-6.8L4.7 8.3h7.1L12 1.5z"
-      />
-    </svg>
-  );
-}
 
 type LandingChatProps = {
   isLoggedIn: boolean;
 };
 
+// Picsum photos are always available — IDs chosen for landscape/nature look
+const SIDE_TRIPS = [
+  {
+    city: "Simien Mts.",
+    country: "Ethiopia",
+    dates: "Apr 30 - May 5",
+    image:
+      "https://images.pexels.com/photos/10502569/pexels-photo-10502569.jpeg",
+    className:
+      "left-[10%] top-[6.5rem] z-20 hidden h-[17rem] w-[11.5rem] -rotate-[3deg] md:block lg:left-[14%]",
+  },
+  {
+    city: "Danakil",
+    country: "Ethiopia",
+    dates: "May 2 - May 7",
+    image:
+      "https://images.pexels.com/photos/5966509/pexels-photo-5966509.jpeg",
+    className:
+      "right-[10%] top-[6.5rem] z-20 hidden h-[17rem] w-[11.5rem] rotate-[3deg] md:block lg:right-[14%]",
+  },
+] as const;
+
+const GHOST_TRIPS = [
+  {
+    city: "Harar",
+    image:
+      "https://images.pexels.com/photos/37087442/pexels-photo-37087442.jpeg",
+    className: "left-[1%] top-[8rem] -rotate-[6deg] lg:left-[4%]",
+  },
+  {
+    city: "Omo Valley",
+    image:
+      "https://images.pexels.com/photos/33763173/pexels-photo-33763173.jpeg",
+    className: "right-[1%] top-[8rem] rotate-[6deg] lg:right-[4%]",
+  },
+] as const;
+
+function goToNext(
+  router: ReturnType<typeof useRouter>,
+  isLoggedIn: boolean,
+  prompt: string,
+) {
+  const trimmed = prompt.trim();
+  const qs = trimmed ? `?prompt=${encodeURIComponent(trimmed)}` : "";
+  router.push(isLoggedIn ? `/concierge${qs}` : `/signup${qs}`);
+}
+
+function TripCard({ trip }: { trip: (typeof SIDE_TRIPS)[number] }) {
+  return (
+    <article
+      className={`absolute overflow-hidden rounded-[1.45rem] bg-neutral-200 shadow-[0_28px_80px_rgba(15,23,42,0.18)] ${trip.className}`}
+      aria-label={`${trip.city}, ${trip.country}`}
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(9,15,28,0.02) 0%, rgba(9,15,28,0.08) 45%, rgba(9,15,28,0.78) 100%), url(${trip.image})`,
+        }}
+      />
+      <div className="relative flex h-full flex-col justify-between p-3 text-white">
+        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-white/24 px-2 py-1 text-[0.6rem] font-medium backdrop-blur-md">
+          🇪🇹 {trip.country}
+        </span>
+        <div>
+          <h2 className="text-base font-semibold tracking-tight">
+            {trip.city} <span className="opacity-70">›</span>
+          </h2>
+          <div className="mt-2 flex items-center gap-1.5 text-[0.6rem] text-white/86">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/18 px-1.5 py-0.5 backdrop-blur-md">
+              <CalendarDays className="size-2.5" />
+              {trip.dates}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/18 px-1.5 py-0.5 backdrop-blur-md">
+              <UsersRound className="size-2.5" />4
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function GhostTripCard({ trip }: { trip: (typeof GHOST_TRIPS)[number] }) {
+  return (
+    <article
+      className={`absolute hidden h-60 w-40 overflow-hidden rounded-[1.35rem] bg-neutral-100 opacity-30 blur-[1px] md:block ${trip.className}`}
+      aria-label={trip.city}
+    >
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(180deg, rgba(255,255,255,0.35), rgba(9,15,28,0.5)), url(${trip.image})`,
+        }}
+      />
+      <div className="relative flex h-full items-end p-3 text-white">
+        <span className="text-xs font-semibold">{trip.city}</span>
+      </div>
+    </article>
+  );
+}
+
 export function LandingChat({ isLoggedIn }: LandingChatProps) {
   const router = useRouter();
-  const [value, setValue] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [query, setQuery] = useState("");
 
-  function goWithMessage(text: string) {
-    const t = text.trim();
-    if (!t) return;
-    const url = `/concierge?q=${encodeURIComponent(t)}&lang=${language}`;
-    if (isLoggedIn) {
-      router.push(url);
-      return;
-    }
-    try {
-      sessionStorage.setItem(PENDING_KEY, t);
-    } catch {
-      /* ignore */
-    }
-    router.push(`/login?callbackUrl=${encodeURIComponent(url)}`);
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    goWithMessage(value);
-    setValue("");
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    goToNext(router, isLoggedIn, query);
   }
 
   return (
-    <section className={cn("relative flex flex-1 flex-col", "bg-[#faf8f5] dark:bg-zinc-950")}>
-      <div className="bg-radial-gradient text-white flex flex-col">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 border border-zinc-800"></div>
-        </div>
-        <main
-          className="relative z-10 flex-1 flex flex-col 
-      items-center justify-center px-4 py-16"
-        >
-          <div
-            className="w-full max-w-4xl mx-auto flex flex-col 
-        items-center"
-          >
-            <div className="relative -mt-10 px-14 py-14">
-              <Line
-                className="left-0 top-2 bg-zinc-700/30 sm:top-4 
-            md:top-6"
-              />
-              <Line
-                className="bottom-2 bg-zinc-700/30  sm:bottom-4 
-            md:bottom-6 left-0"
-              />
-              <Line
-                className="w-px bg-zinc-700/30  right-2 sm:right-4 
-            md:right-6 h-full inset-y-0"
-              />
-              <Line
-                className="w-px bg-zinc-700/30  left-2 sm:left-4 
-            md:left-6 h-full inset-y-0"
-              />
-              <h1
-                className="text-4xl dark:from-zinc-400/10 
-            dark:via-white/90 dark:to-white/20  bg-linear-to-tr  
-            from-black/70 via-black to-black/60 bg-clip-text 
-            text-transparent tracking-tighter md:text-5xl lg:text-6xl 
-            font-bold text-center mb-"
-              >
-                Velora
-              </h1>
-            </div>
-          </div>
-        </main>
-      </div>
-      <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-4 relative z-[50]">
-        <div className="mb-10 flex flex-col items-center gap-4">
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-            <h1 className="text-center text-[2rem] font-medium leading-tight tracking-tight text-foreground md:text-5xl md:leading-[1.15] [font-family:var(--font-cormorant),ui-serif,Georgia,serif]">
-              Where shall we explore?
-            </h1>
-          </div>
-          <p className="max-w-md text-center text-sm text-muted-foreground md:text-base">
-            Book guides, drivers, and translators in Ethiopia — in Amharic or English.
+    <section className="relative isolate min-h-[calc(100vh-4.5rem)] overflow-hidden bg-white text-[#090b1a]">
+      <div className="container relative mx-auto flex max-w-[100rem] flex-col items-center px-5 pb-8 pt-9 text-center sm:pt-12 md:px-14 lg:px-20">
+        <div className="mx-auto max-w-[54rem]">
+          <h1 className="text-balance text-[clamp(2.45rem,4.45vw,4.25rem)] font-semibold leading-[0.98] tracking-normal">
+            Explore Ethiopia{" "}
+            <span className="whitespace-nowrap font-serif italic text-[#2672ff] [font-family:var(--font-cormorant),Georgia,serif]">
+              stress-free
+            </span>{" "}
+            with a bilingual AI concierge.
+          </h1>
+
+          <p className="mx-auto mt-5 max-w-[33rem] text-sm leading-6 text-[#646a76] sm:text-base">
+            Book trusted local guides, drivers, and translators in Amharic or
+            English — get matched and confirmed in seconds.
           </p>
+
+          <form
+            onSubmit={handleSubmit}
+            className="mx-auto mt-6 flex h-14 w-full max-w-[27rem] items-center gap-2 rounded-[1.25rem] border border-[#e9edf5] bg-white p-1.5 shadow-[0_18px_60px_rgba(31,53,92,0.08)]"
+          >
+            <label className="sr-only" htmlFor="landing-prompt">
+              Where do you want to go?
+            </label>
+            <MapPin className="ml-2 size-4 shrink-0 text-[#9aa2b1]" />
+            <input
+              id="landing-prompt"
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Where do you want to go?"
+              autoComplete="off"
+              className="min-h-11 flex-1 border-0 bg-transparent px-1 text-sm text-[#1f2430] outline-none placeholder:text-[#9aa2b1]"
+            />
+            <Button
+              type="submit"
+              size="icon"
+              aria-label="Send"
+              className="size-11 shrink-0 rounded-[1rem] bg-[#1f6fff] text-white shadow-[0_14px_32px_rgba(31,111,255,0.28)] hover:bg-[#175edb]"
+            >
+              <Send className="size-4" />
+            </Button>
+          </form>
+
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.72rem] text-[#8a92a3]">
+            <span className="inline-flex items-center gap-1.5">
+              <Languages className="size-3.5 text-[#a6adb9]" />
+              Speaks Amharic &amp; English
+            </span>
+            <span aria-hidden="true" className="text-[#cdd2dc]">
+              •
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-[#a6adb9]" />
+              Verified local providers
+            </span>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="w-full">
-          <div
-            className={cn(
-              "rounded-[1.75rem] border bg-card p-4 shadow-sm md:p-5",
-              "border-stone-200/90 dark:border-zinc-800",
-              "ring-1 ring-black/3 dark:ring-white/6",
-            )}
-          >
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="How can I help you today?"
-              rows={3}
-              className={cn(
-                "w-full resize-none border-0 bg-transparent text-base text-foreground outline-none",
-                "placeholder:text-muted-foreground/65",
-                "focus-visible:ring-0 min-h-22",
-              )}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  goWithMessage(value);
-                  setValue("");
-                }
-              }}
-            />
+        {/* Phone mockup + side cards */}
+        <div className="relative mt-9 h-[25rem] w-full max-w-[56rem] md:h-[30rem]">
+          <GhostTripCard trip={GHOST_TRIPS[0]} />
+          <GhostTripCard trip={GHOST_TRIPS[1]} />
 
-            <div className="mt-3 flex items-center justify-between gap-3 border-t border-border/50 pt-3">
+          <TripCard trip={SIDE_TRIPS[0]} />
+          <TripCard trip={SIDE_TRIPS[1]} />
+
+          {/* Phone frame */}
+          <div className="absolute left-1/2 top-0 z-30 h-[26rem] w-[15.5rem] -translate-x-1/2 rounded-[2.25rem] border border-[#e7ebf3] bg-[#f8fafc] p-2.5 shadow-[0_30px_90px_rgba(24,35,67,0.18)] md:h-[29rem] md:w-[17.5rem]">
+            {/* Status bar */}
+            <div className="mb-2 flex items-center justify-between px-3 text-[0.7rem] font-semibold text-[#171b26]">
+              <span>9:41</span>
+              <span className="flex items-center gap-1">
+                <Signal className="size-3" />
+                <Wifi className="size-3" />
+                <BatteryFull className="size-3.5" />
+              </span>
+            </div>
+
+            {/* Pill tabs */}
+            <div className="mb-2 flex items-center justify-between px-1">
+              <div className="flex rounded-full bg-white p-0.5 text-[0.65rem] font-medium shadow-sm">
+                <span className="rounded-full px-2.5 py-1 text-[#8a92a3]">
+                  Active
+                </span>
+                <span className="rounded-full bg-[#eaf2ff] px-3 py-1 text-[#1f6fff]">
+                  Past
+                </span>
+              </div>
               <Button
                 type="button"
-                variant="ghost"
                 size="icon"
-                className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
-                aria-label="Add attachment"
-                disabled
+                className="size-7 rounded-full bg-[#1f6fff] text-white hover:bg-[#175edb]"
+                aria-label="Add trip"
               >
-                <Plus className="h-5 w-5" />
+                +
               </Button>
+            </div>
 
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Select value={language} onValueChange={setLanguage}>
-                  <SelectTrigger
-                    size="sm"
-                    className="h-9 w-[min(100%,11rem)] rounded-full border-0 bg-muted/50 text-xs shadow-none md:text-sm"
-                  >
-                    <SelectValue placeholder="Language" />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="am">Amharic</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 rounded-full text-muted-foreground"
-                  aria-label="Voice input (coming soon)"
-                  disabled
-                >
-                  <Mic className="h-4 w-4" />
-                </Button>
+            {/* Trip card inside phone */}
+            <div className="relative h-[calc(100%-5.5rem)] overflow-hidden rounded-[1.5rem] bg-neutral-200 shadow-[0_18px_45px_rgba(15,23,42,0.16)]">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                backgroundImage: `linear-gradient(180deg, rgba(9,15,28,0) 0%, rgba(9,15,28,0.05) 45%, rgba(9,15,28,0.78) 100%), url(https://images.pexels.com/photos/7438884/pexels-photo-7438884.jpeg)`,
+                }}
+              />
+              <div className="relative flex h-full flex-col justify-between p-3 text-white">
+                <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-[0.65rem] font-medium text-[#1b1f2a] shadow-sm">
+                  <MapPin className="size-3 fill-[#d33] text-[#d33]" />
+                  Ethiopia
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold tracking-tight">
+                    Lalibela <span className="opacity-70">›</span>
+                  </h3>
+                  <div className="mt-2 flex items-center gap-1.5 text-[0.62rem] text-white/90">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-1.5 py-0.5 backdrop-blur-md">
+                      <CalendarDays className="size-2.5" />
+                      Apr 30 - May 5
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-1.5 py-0.5 backdrop-blur-md">
+                      <Languages className="size-2.5" />
+                      AM/EN
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-1.5 py-0.5 backdrop-blur-md">
+                      <UsersRound className="size-2.5" />4
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Pagination dots */}
+            <div className="absolute bottom-3 left-1/2 z-40 flex -translate-x-1/2 gap-1.5">
+              <span className="size-1.5 rounded-full bg-[#171b26]" />
+              <span className="size-1.5 rounded-full bg-[#cfd6e4]" />
+            </div>
           </div>
-
-          <p className="mt-2 text-center text-xs text-muted-foreground md:text-left">
-            Press{" "}
-            <kbd className="rounded border border-border px-1.5 py-0.5 font-mono text-[0.65rem]">
-              Enter
-            </kbd>{" "}
-            to send · Sign in to start chatting
-          </p>
-        </form>
-
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-2 md:gap-2.5">
-          {QUICK_PROMPTS.map(({ icon: Icon, label, text }) => (
-            <Button
-              key={label}
-              type="button"
-              variant="secondary"
-              size="sm"
-              className={cn(
-                "h-9 rounded-full border border-border/60 bg-background/80 px-3 text-xs font-normal shadow-sm",
-                "hover:bg-muted/80 dark:bg-zinc-900/80",
-              )}
-              onClick={() => goWithMessage(text)}
-            >
-              <Icon className="mr-1.5 h-3.5 w-3.5 opacity-70" />
-              {label}
-            </Button>
-          ))}
         </div>
       </div>
     </section>

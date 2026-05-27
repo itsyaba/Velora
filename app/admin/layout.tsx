@@ -163,7 +163,7 @@ function DesktopSidebar({
               transition={{ duration: 0.15 }}
               className="flex flex-col"
             >
-              <span className="text-sm font-bold tracking-tight">Velora</span>
+              <span className="text-sm font-bold tracking-tight">guzoAI</span>
               <span className="text-[11px] text-muted-foreground">
                 Admin Panel
               </span>
@@ -239,7 +239,7 @@ function MobileSidebar({
             </div>
             <div className="flex flex-col">
               <SheetTitle className="text-sm font-bold tracking-tight">
-                Velora
+                guzoAI
               </SheetTitle>
               <SheetDescription className="text-[11px] text-muted-foreground">
                 Admin Panel
@@ -303,7 +303,7 @@ function TopNavbar({
 
         {/* Breadcrumb style title */}
         <div className="flex items-center gap-2 text-sm font-medium">
-          <span className="hidden text-muted-foreground md:inline">Velora</span>
+          <span className="hidden text-muted-foreground md:inline">guzoAI</span>
           <span className="hidden text-muted-foreground md:inline">/</span>
           <span>{title}</span>
         </div>

@@ -169,7 +169,7 @@ export default function TranslatorsPage() {
             <DialogHeader>
               <DialogTitle>Add New Translator</DialogTitle>
               <DialogDescription>
-                Register a new language specialist into the Velora system.
+                Register a new language specialist into the guzoAI system.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreateTranslator} className="space-y-4 py-4">

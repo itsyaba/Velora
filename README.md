@@ -1,4 +1,4 @@
-# Velora — AI Concierge for Ethiopia
+# guzoAI — AI Concierge for Ethiopia
 
 Book local guides, drivers, and translators with a bilingual (Amharic + English) AI concierge. This repo implements the **Traveler MVP**: text chat, intent classification, top provider suggestions from MongoDB, and one-click **Book / Request** with pending bookings.
 

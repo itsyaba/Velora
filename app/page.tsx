@@ -3,95 +3,67 @@ import { headers } from "next/headers";
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Layout } from "lucide-react";
+import { CircleDot } from "lucide-react";
 import LogoutButton from "@/components/auth/logout-button-icon";
 import HeroSection from "./_components/hero";
+import HowItWorks from "./_components/how-it-works";
+import Features from "./_components/features";
+import Destinations from "./_components/destinations";
+import CTA from "./_components/cta";
+import LandingFooter from "./_components/landing-footer";
+
 export default async function page() {
   const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });
   return (
-    <div className="flex relative min-h-screen flex-col">
-      <header className="relative z-20 border-b border-stone-200/80 bg-[#faf8f5] dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center ">
-            <span className="font-bold text-xl">Velora</span>
-          </div>
-          <nav className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <ModeToggle />
-              {session?.user ? (
-                <div className="flex gap-2 items-center">
-                  <Link href="/concierge">
-                    <Button className="rounded-sm" variant="default" size="default">
-                      Concierge
-                    </Button>
-                  </Link>
-                  <a href="/dashboard">
-                    <Button
-                      className="rounded-sm flex items-center gap-2"
-                      variant="outline"
-                      size="default"
-                    >
-                      <Layout className="w-4 h-4" />
-                      Dashboard
-                    </Button>
-                  </a>
-                  <LogoutButton />
-                </div>
-              ) : (
-                <>
-                  <Link href="/login">
-                    <Button className="rounded-sm" variant="outline">
-                      Log in
-                    </Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button className="rounded-sm">Sign up</Button>
-                  </Link>
-                </>
-              )}
-            </div>
+    <div className="relative flex min-h-screen flex-col bg-white">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl">
+        <div className="container mx-auto flex h-[4.5rem] max-w-[100rem] items-center justify-between px-5 md:px-14 lg:px-20">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="flex size-6 items-center justify-center rounded-full bg-[#eaf2ff] text-[#1f6fff]">
+              <CircleDot className="size-5 fill-[#1f6fff]/25" strokeWidth={2.5} />
+            </span>
+            <span className="text-xl font-bold tracking-tight text-[#1b1f2a]">
+              Guzo AI
+            </span>
+          </Link>
+          <nav className="flex items-center gap-2">
+            {session?.user ? (
+              <div className="flex items-center gap-2">
+                <Link href="/concierge">
+                  <Button
+                    className="rounded-full bg-[#1f6fff] px-5 text-white hover:bg-[#175edb]"
+                    size="default"
+                  >
+                    Open app
+                  </Button>
+                </Link>
+                <LogoutButton />
+              </div>
+            ) : (
+              <Link href="/signup">
+                <Button className="rounded-full bg-[#1f6fff] px-5 text-white shadow-[0_14px_30px_rgba(31,111,255,0.24)] hover:bg-[#175edb]">
+                  Join beta
+                </Button>
+              </Link>
+            )}
           </nav>
         </div>
       </header>
       <main className="flex flex-1 flex-col">
         <HeroSection isLoggedIn={!!session?.user} />
-      </main>
-      {/* <footer className="fixed border bottom-0 w-full z-10 border-t flex border-zinc-200 dark:border-zinc-800 py-6 md:bg-black/5 md:dark:bg-black/80 backdrop-blur-sm">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center mb-4 md:mb-0">
-            <Shield className="h-5 w-5 mr-2" />
-            <span className="text-sm font-medium">Auth Starter</span>
-          </div>
-          <div className="flex items-center space-x-6">
-            <Link
-              href="https://github.com/better-auth/better-auth"
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-            >
-              Github <ArrowUpRight className="w-3 h-3" />
-            </Link>
-            <Link
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-              href="https://better-auth.com/docs"
-            >
-              Docs <ArrowUpRight className="w-3 h-3" />
-            </Link>
-            <Link
-              className="text-sm flex gap-2 items-center text-zinc-700 dark:text-zinc-400 dark:hover:text-white"
-              href="https://www.better-auth.com/docs/examples"
-            >
-              Examples
-              <ArrowUpRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="text-sm text-zinc-500 mt-4 md:mt-0">
-            Better Auth Starter
-          </div>
+        <div id="how-it-works">
+          <HowItWorks />
         </div>
-      </footer> */}
+        <Features />
+        <div id="destinations">
+          <Destinations />
+        </div>
+        <CTA isLoggedIn={!!session?.user} />
+      </main>
+      <LandingFooter />
     </div>
   );
 }

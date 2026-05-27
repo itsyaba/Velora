@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircleDot } from "lucide-react";
 import LogoutButton from "@/components/auth/logout-button-icon";
+import { ModeToggle } from "@/components/mode-toggle";
 import HeroSection from "./_components/hero";
 import HowItWorks from "./_components/how-it-works";
 import Features from "./_components/features";
@@ -36,6 +37,7 @@ export default async function page() {
             <span className="text-xl font-bold tracking-tight text-foreground">Guzo AI</span>
           </Link>
           <nav className="flex items-center gap-2">
+            <ModeToggle />
             {session?.user ? (
               <div className="flex items-center gap-2">
                 {session?.user && "role" in session.user && session.user.role === "admin" && (
@@ -53,9 +55,9 @@ export default async function page() {
                     Open chat
                   </Button>
                 </Link>
-                <Avatar className="size-9 border border-[#e7ebf3]">
+                <Avatar className="size-9 border border-border">
                   <AvatarImage src={session.user.image ?? undefined} alt={session.user.name} />
-                  <AvatarFallback className="bg-[#eef4ff] text-xs font-semibold text-[#1f6fff]">
+                  <AvatarFallback className="bg-muted text-xs font-semibold text-primary">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>

@@ -358,7 +358,10 @@ export default function AdminLayout({
     return <div className="flex h-screen items-center justify-center">Loading...</div>;
   }
 
-  if (!session || session.user.role !== "admin") {
+  const isAdmin =
+    session?.user && "role" in session.user && session.user.role === "admin";
+
+  if (!isAdmin) {
     if (typeof window !== "undefined") router.replace("/");
     return null;
   }

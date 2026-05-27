@@ -14,7 +14,10 @@ export async function requireAdmin(request?: Request) {
     headers: request ? request.headers : await headers(),
   });
 
-  if (!session || session.user.role !== "admin") {
+  const isAdmin =
+    session?.user && "role" in session.user && session.user.role === "admin";
+
+  if (!isAdmin) {
     return null;
   }
 

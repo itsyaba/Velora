@@ -2,16 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import {
-  ArrowUp,
-  Car,
-  Coffee,
-  Languages,
-  Mic,
-  Moon,
-  Plus,
-  Sparkles,
-} from "lucide-react";
+import { ArrowUp, Mic, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,6 +20,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getTextFromUIMessage } from "@/lib/message-text";
 import type { ProviderSuggestion } from "@/lib/provider-query";
+import {
+  LANDING_PROMPT_KEY,
+  QUICK_PROMPTS,
+} from "@/lib/landing-quick-prompts";
 import { cn } from "@/lib/utils";
 
 export type ConciergeUIMessage = UIMessage<
@@ -37,14 +32,6 @@ export type ConciergeUIMessage = UIMessage<
 >;
 
 const SESSION_KEY = "guzoai-concierge-session";
-const LANDING_PROMPT_KEY = "guzoai-landing-prompt";
-const QUICK_PROMPTS = [
-  { icon: Car, label: "Driver", text: "I need a driver in Addis Ababa today." },
-  { icon: Sparkles, label: "Guide", text: "I want a tour guide who speaks English." },
-  { icon: Languages, label: "Translator", text: "I need a translator for a meeting." },
-  { icon: Moon, label: "Tonight", text: "What can I do tonight in Addis?" },
-  { icon: Coffee, label: "Relax", text: "Suggest a relaxing experience nearby." },
-] as const;
 
 function FrameLine({ className }: { className: string }) {
   return (

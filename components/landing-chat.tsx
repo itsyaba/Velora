@@ -15,6 +15,11 @@ import { useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  LANDING_PROMPT_KEY,
+  QUICK_PROMPTS,
+} from "@/lib/landing-quick-prompts";
+import { cn } from "@/lib/utils";
 
 type LandingChatProps = {
   isLoggedIn: boolean;
@@ -63,8 +68,20 @@ function goToNext(
   prompt: string,
 ) {
   const trimmed = prompt.trim();
-  const qs = trimmed ? `?prompt=${encodeURIComponent(trimmed)}` : "";
-  router.push(isLoggedIn ? `/concierge${qs}` : `/signup${qs}`);
+  if (trimmed) {
+    sessionStorage.setItem(LANDING_PROMPT_KEY, trimmed);
+  }
+  const qs = trimmed ? `?q=${encodeURIComponent(trimmed)}` : "";
+  if (isLoggedIn) {
+    router.push(`/concierge${qs}`);
+    return;
+  }
+  if (trimmed) {
+    const callbackUrl = encodeURIComponent(`/concierge${qs}`);
+    router.push(`/login?callbackUrl=${callbackUrl}`);
+    return;
+  }
+  router.push("/signup");
 }
 
 function TripCard({ trip }: { trip: (typeof SIDE_TRIPS)[number] }) {
@@ -130,6 +147,11 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
     goToNext(router, isLoggedIn, query);
   }
 
+  function handleQuickPrompt(text: string) {
+    setQuery(text);
+    goToNext(router, isLoggedIn, text);
+  }
+
   return (
     <section className="relative isolate min-h-[calc(100vh-4.5rem)] overflow-hidden bg-background text-foreground">
       <div className="container relative mx-auto flex max-w-[100rem] flex-col items-center px-5 pb-8 pt-9 text-center sm:pt-12 md:px-14 lg:px-20">
@@ -173,6 +195,22 @@ export function LandingChat({ isLoggedIn }: LandingChatProps) {
               <Send className="size-4" />
             </Button>
           </form>
+
+          <div className="mx-auto mt-3 flex max-w-[36rem] flex-wrap items-center justify-center gap-2">
+            {QUICK_PROMPTS.map(({ icon: Icon, label, text }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleQuickPrompt(text)}
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-full border border-border/80 bg-background px-3.5 text-xs font-medium text-foreground shadow-[0_2px_8px_rgba(31,53,92,0.06)] transition-colors hover:bg-muted/60",
+                )}
+              >
+                <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                {label}
+              </button>
+            ))}
+          </div>
 
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-[0.72rem] text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">

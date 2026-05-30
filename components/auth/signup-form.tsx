@@ -142,6 +142,7 @@ export function SignupForm({ className, initialEmail = "", ...props }: SignupFor
               </a>
             </div>
           </form>
+          {/* Social logins disabled until providers are configured
           <hr className="w-full h-px border-input my-4" />
           <div className="flex my-3 gap-2">
             <button
@@ -295,6 +296,7 @@ export function SignupForm({ className, initialEmail = "", ...props }: SignupFor
               </svg>
             </button>
           </div>
+          */}
         </CardContent>
       </Card>
     </div>
